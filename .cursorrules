@@ -1,0 +1,5 @@
+- Stack: React (Vite) + Tailwind CSS + Dexie.js + SheetJS (XLSX).
+- Arquitectura: PWA 100% offline sin backend (IndexDB puro).
+- UI/UX: Interfaz optimizada para Tablet Android. Botones grandes, touch-friendly, contrastes claros y formularios simples.
+- Base de datos: Schemas limpios en Dexie.js para productos (categoría, marca, talla, precio, existencia), ventas y reportes.
+- No agregues dependencias innecesarias de servidor.

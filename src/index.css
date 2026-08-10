@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    @apply h-full w-full overflow-hidden font-sans;
+  }
+
+  body {
+    background-color: #fffffc;
+    color: #333333;
+    font-family: 'Quicksand', sans-serif;
+    @apply antialiased;
+    touch-action: manipulation;
+  }
+
+  .dark body {
+    background-color: #1c1917;
+    color: #e5e5e5;
+    font-family: 'Quicksand', sans-serif;
+  }
+}
+
+@layer utilities {
+  .wood-texture {
+    background-color: #fbbe93;
+    background-image:
+      linear-gradient(rgb(251 190 147 / 0.7), rgb(251 190 147 / 0.7)),
+      url('/wood-pattern.png');
+    background-repeat: repeat;
+    background-size: auto;
+  }
+
+  .dark .wood-texture {
+    background-color: #2d1c15;
+    background-image:
+      linear-gradient(rgb(45 28 21 / 0.7), rgb(45 28 21 / 0.7)),
+      url('/wood-pattern-dark.png');
+    background-repeat: repeat;
+    background-size: auto;
+  }
+
+  /* Barra horizontal (header móvil): usar textura rotada 90° en public/ */
+  .wood-texture-horizontal {
+    background-color: #fbbe93;
+    background-image:
+      linear-gradient(rgb(251 190 147 / 0.7), rgb(251 190 147 / 0.7)),
+      url('/wood-pattern-horizontal.png');
+    background-repeat: repeat;
+    background-size: auto;
+  }
+
+  .dark .wood-texture-horizontal {
+    background-color: #2d1c15;
+    background-image:
+      linear-gradient(rgb(45 28 21 / 0.7), rgb(45 28 21 / 0.7)),
+      url('/wood-pattern-dark-horizontal.png');
+    background-repeat: repeat;
+    background-size: auto;
+  }
+
+  .view-header {
+    background-color: #fbbe93;
+    background-image:
+      linear-gradient(rgb(251 190 147 / 0.7), rgb(251 190 147 / 0.7)),
+      url('/wood-pattern-horizontal.png');
+    background-repeat: repeat;
+    background-size: auto;
+  }
+
+  .dark .view-header {
+    background-color: #2d1c15;
+    background-image:
+      linear-gradient(rgb(45 28 21 / 0.7), rgb(45 28 21 / 0.7)),
+      url('/wood-pattern-dark-horizontal.png');
+    background-repeat: repeat;
+    background-size: auto;
+  }
+
+  .table-row-accent:nth-child(even) {
+    @apply bg-transparent;
+  }
+
+  .table-row-accent:nth-child(odd) {
+    background-color: rgb(212 140 112 / 0.1);
+  }
+
+  .dark .table-row-accent:nth-child(odd) {
+    background-color: #24211f;
+  }
+}
+
+@layer components {
+  .panel-surface {
+    @apply rounded-xl shadow-md;
+    background-color: #fffffc;
+  }
+
+  .dark .panel-surface {
+    background-color: #24211f;
+    @apply border border-[#332f2d];
+  }
+
+  .panel-card {
+    @apply rounded-xl shadow-sm;
+    background-color: #fffffc;
+  }
+
+  .dark .panel-card {
+    background-color: #24211f;
+    @apply border border-[#332f2d];
+  }
+
+  .btn-primary {
+    @apply rounded-full font-semibold text-white shadow-sm transition-colors active:scale-[0.98];
+    background-color: #d48c70;
+  }
+
+  .btn-primary:hover {
+    background-color: #c27a5f;
+  }
+
+  .dark .btn-primary {
+    background-color: #8c4a32;
+  }
+
+  .dark .btn-primary:hover {
+    background-color: #7a3f29;
+  }
+}

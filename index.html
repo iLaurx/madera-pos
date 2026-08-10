@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#FFFFFC" id="theme-color-meta" />
+    <meta name="description" content="Sistema de inventario y punto de venta" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Madera Boutique" />
+    <title>Madera Boutique</title>
+    <script>
+      try {
+        var t = localStorage.getItem('madera-theme')
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        var isDark = t === 'dark' || (!t && prefersDark)
+        var root = document.documentElement
+        var themeMeta = document.getElementById('theme-color-meta')
+        if (isDark) {
+          root.classList.add('dark')
+          root.style.colorScheme = 'dark'
+          root.dataset.theme = 'dark'
+          if (themeMeta) themeMeta.setAttribute('content', '#1C1917')
+        } else {
+          root.classList.remove('dark')
+          root.style.colorScheme = 'light'
+          root.dataset.theme = 'light'
+          if (themeMeta) themeMeta.setAttribute('content', '#FFFFFC')
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
