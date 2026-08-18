@@ -16,6 +16,7 @@ import {
   ordenarStockPrimero,
 } from '../lib/productos'
 import { safeVibrate } from '../lib/safeWeb'
+import { printReceipt } from '../utils/printer'
 
 export default function CajaView() {
   const [departamento, setDepartamento] = useState('Todos')
@@ -162,7 +163,18 @@ export default function CajaView() {
       setMensaje(null)
 
       try {
-        await db.transaction('rw', db.ventas, db.productos, async () => {
+        const fechaVenta = new Date()
+        const itemsVenta = carrito.map((item) => ({
+          productoId: item.productoId,
+          marca: item.marca,
+          descripcion: item.descripcion,
+          talla: item.talla,
+          precio: item.precio,
+          cantidad: item.cantidad,
+          subtotal: item.precio * item.cantidad,
+        }))
+
+        const ventaId = await db.transaction('rw', db.ventas, db.productos, async () => {
           const cantidadPorProducto = carrito.reduce((acc, item) => {
             acc[item.productoId] = (acc[item.productoId] ?? 0) + item.cantidad
             return acc
@@ -178,19 +190,11 @@ export default function CajaView() {
             }
           }
 
-          await db.ventas.add({
-            fecha: new Date(),
+          const id = await db.ventas.add({
+            fecha: fechaVenta,
             total,
             metodoPago,
-            items: carrito.map((item) => ({
-              productoId: item.productoId,
-              marca: item.marca,
-              descripcion: item.descripcion,
-              talla: item.talla,
-              precio: item.precio,
-              cantidad: item.cantidad,
-              subtotal: item.precio * item.cantidad,
-            })),
+            items: itemsVenta,
           })
 
           for (const [productoId, cantidad] of Object.entries(cantidadPorProducto)) {
@@ -199,12 +203,30 @@ export default function CajaView() {
               existencia: producto.existencia - cantidad,
             })
           }
+
+          return id
+        })
+
+        const printResult = await printReceipt({
+          id: ventaId,
+          fecha: fechaVenta,
+          total,
+          metodoPago,
+          items: itemsVenta,
         })
 
         setCarrito([])
         setCheckoutOpen(false)
-        setMensaje({ tipo: 'exito', texto: 'Venta registrada correctamente' })
-        setTimeout(() => setMensaje(null), 3000)
+
+        let texto = 'Venta registrada correctamente'
+        if (printResult.success) {
+          texto = 'Venta registrada e ticket impreso'
+        } else if (printResult.error !== 'No se seleccionó ninguna impresora') {
+          texto = `Venta registrada. No se imprimió: ${printResult.error}`
+        }
+
+        setMensaje({ tipo: 'exito', texto })
+        setTimeout(() => setMensaje(null), 4000)
       } catch (error) {
         setMensaje({
           tipo: 'error',
