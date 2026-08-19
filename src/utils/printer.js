@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from 'react'
 import { formatFecha, formatHora } from '../lib/date'
-import { formatCurrency } from '../lib/format'
 import { etiquetaProducto } from '../lib/productos'
 
 const PRINTER_SERVICE_UUID = '000018f0-0000-1000-8000-00805f9b34fb'
@@ -78,11 +77,40 @@ function getServerPrinterStatusSnapshot() {
   return INITIAL_STATUS
 }
 
+/**
+ * Unicode → CP850 / CP437 (español). Las térmicas ESC/POS 80mm usan este
+ * charset por defecto; enviar Latin-1 (ñ=0xF1) imprime símbolos raros.
+ */
+const CP850_CHARS = {
+  á: 0xa0,
+  é: 0x82,
+  í: 0xa1,
+  ó: 0xa2,
+  ú: 0xa3,
+  ü: 0x81,
+  ñ: 0xa4,
+  Á: 0xb5,
+  É: 0x90,
+  Í: 0xd6,
+  Ó: 0xe0,
+  Ú: 0xe9,
+  Ü: 0x9a,
+  Ñ: 0xa5,
+  '¡': 0xad,
+  '¿': 0xa8,
+  º: 0xa7,
+  ª: 0xa6,
+}
+
 function encodeText(text) {
   const bytes = []
   for (const char of String(text ?? '')) {
+    if (Object.prototype.hasOwnProperty.call(CP850_CHARS, char)) {
+      bytes.push(CP850_CHARS[char])
+      continue
+    }
     const code = char.charCodeAt(0)
-    bytes.push(code <= 0xff ? code : 0x3f)
+    bytes.push(code <= 0x7f ? code : 0x3f)
   }
   return bytes
 }
@@ -98,46 +126,160 @@ function mergeByteArrays(parts) {
   return buffer
 }
 
-function formatItemLine(item) {
-  const nombre = etiquetaProducto(item)
-  const talla = item.talla ? ` (${item.talla})` : ''
-  const cantidad = item.cantidad ?? 1
-  return `${cantidad} x ${nombre}${talla}`
+const RECEIPT_WIDTH = 48
+const QTY_COL = 4
+const DESC_COL = 33
+const PRICE_COL = 11
+const RETURNS_NOTICE =
+  'Cambios y devoluciones únicamente con este ticket dentro de 30 días.'
+
+function bytes(...values) {
+  return Uint8Array.from(values)
+}
+
+function textLine(value = '') {
+  return Uint8Array.from([...encodeText(value), 0x0a])
+}
+
+function dashedSeparator() {
+  return textLine('-'.repeat(RECEIPT_WIDTH))
+}
+
+function formatPaymentMethod(saleData) {
+  const raw = saleData?.paymentMethod || saleData?.metodoPago || 'Efectivo'
+  const key = String(raw).trim().toLowerCase()
+  if (key === 'efectivo') return 'Efectivo'
+  if (key === 'transferencia') return 'Transferencia'
+  return String(raw).trim() || 'Efectivo'
+}
+
+function padRight(value, width) {
+  const text = String(value ?? '')
+  if (text.length >= width) return text.slice(0, width)
+  return text + ' '.repeat(width - text.length)
+}
+
+function padLeft(value, width) {
+  const text = String(value ?? '')
+  if (text.length >= width) return text.slice(text.length - width)
+  return ' '.repeat(width - text.length) + text
+}
+
+function formatTicketMoney(amount) {
+  const n = Number(amount)
+  const value = Number.isFinite(n) ? n : 0
+  const abs = Math.abs(value).toFixed(2)
+  const [integer, decimal] = abs.split('.')
+  const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  const sign = value < 0 ? '-' : ''
+  return `${sign}$${grouped}.${decimal}`
+}
+
+function wrapDescription(text, width) {
+  const source = String(text ?? '').trim()
+  if (!source) return ['']
+
+  const lines = []
+  let remaining = source
+  while (remaining.length > width) {
+    const chunk = remaining.slice(0, width)
+    const breakAt = chunk.lastIndexOf(' ')
+    const cut = breakAt > 0 ? breakAt : width
+    lines.push(remaining.slice(0, cut).trimEnd())
+    remaining = remaining.slice(cut).trimStart()
+  }
+  if (remaining) lines.push(remaining)
+  return lines
+}
+
+/**
+ * Formatea un producto al layout de 48 columnas:
+ * cantidad (4, izq) + descripción (33, pad der, wrap) + subtotal (11, der, $).
+ * @param {object} item
+ * @returns {string[]}
+ */
+function formatProductLines(item) {
+  const qty = String(item?.cantidad ?? 1)
+  const nombre = etiquetaProducto(item).replace(/\u2014|\u2013/g, '-')
+  const talla = item?.talla ? ` (${item.talla})` : ''
+  const description = `${nombre}${talla}`
+  const subtotal =
+    item?.subtotal ?? (Number(item?.precio) || 0) * (Number(item?.cantidad) || 1)
+  const price = formatTicketMoney(subtotal)
+
+  const descLines = wrapDescription(description, DESC_COL)
+  const lines = [
+    padRight(qty, QTY_COL) + padRight(descLines[0], DESC_COL) + padLeft(price, PRICE_COL),
+  ]
+
+  for (let i = 1; i < descLines.length; i += 1) {
+    lines.push(' '.repeat(QTY_COL) + padRight(descLines[i], DESC_COL) + ' '.repeat(PRICE_COL))
+  }
+
+  return lines
 }
 
 function buildReceiptBuffer(saleData) {
-  const fecha = saleData.fecha ?? new Date()
-  const ventaId = saleData.id != null ? String(saleData.id) : '—'
+  const fecha = saleData?.fecha ?? new Date()
+  const ventaId = saleData?.id != null ? String(saleData.id) : '-'
+  const items = Array.isArray(saleData?.items) ? saleData.items : []
+  const tableHeader =
+    padRight('CANT', QTY_COL) + padRight(' DESCRIPCION', DESC_COL) + padLeft('IMPORTE', PRICE_COL)
 
   const parts = [
-    Uint8Array.from([0x1b, 0x40]),
+    bytes(0x1b, 0x40),
     CASH_DRAWER_PULSE,
-    Uint8Array.from([0x1b, 0x61, 0x01]),
-    Uint8Array.from([0x1b, 0x21, 0x30]),
-    Uint8Array.from(encodeText('Madera Boutique')),
-    Uint8Array.from([0x0a]),
-    Uint8Array.from([0x1b, 0x21, 0x00]),
-    Uint8Array.from([0x0a]),
-    Uint8Array.from([0x1b, 0x61, 0x00]),
-    Uint8Array.from(encodeText(`Venta #${ventaId}`)),
-    Uint8Array.from([0x0a]),
-    Uint8Array.from(encodeText(`Fecha: ${formatFecha(fecha)} ${formatHora(fecha)}`)),
-    Uint8Array.from([0x0a, 0x0a]),
-    Uint8Array.from(encodeText('Productos:')),
-    Uint8Array.from([0x0a]),
+    bytes(0x1b, 0x74, 0x02),
+
+    bytes(0x1b, 0x61, 0x01),
+    bytes(0x1d, 0x21, 0x11),
+    textLine('MADERA BOUTIQUE'),
+    bytes(0x1d, 0x21, 0x00),
+    textLine('Calle 16 de septiembre #6, Bolaños, Jalisco'),
+    bytes(0x0a),
+
+    bytes(0x1b, 0x61, 0x00),
+    textLine(`Ticket: ${ventaId}`),
+    textLine(`Fecha:  ${formatFecha(fecha)}`),
+    textLine(`Hora:   ${formatHora(fecha)}`),
+    bytes(0x0a),
+    dashedSeparator(),
+    textLine(tableHeader),
+    dashedSeparator(),
   ]
 
-  const items = Array.isArray(saleData.items) ? saleData.items : []
   for (const item of items) {
-    parts.push(Uint8Array.from(encodeText(formatItemLine(item))))
-    parts.push(Uint8Array.from([0x0a]))
+    for (const line of formatProductLines(item)) {
+      parts.push(textLine(line))
+    }
   }
 
   parts.push(
-    Uint8Array.from([0x0a]),
-    Uint8Array.from(encodeText(`Total: ${formatCurrency(saleData.total)}`)),
-    Uint8Array.from([0x0a, 0x0a, 0x0a]),
-    Uint8Array.from([0x1d, 0x56, 0x42, 0x00]),
+    dashedSeparator(),
+    bytes(0x1b, 0x61, 0x02),
+    bytes(0x1b, 0x45, 0x01),
+    textLine(padLeft(`TOTAL: ${formatTicketMoney(saleData?.total)}`, RECEIPT_WIDTH)),
+    bytes(0x1b, 0x45, 0x00),
+    bytes(0x1b, 0x61, 0x00),
+    textLine(`Forma de Pago: ${formatPaymentMethod(saleData)}`),
+    dashedSeparator(),
+
+    bytes(0x1b, 0x61, 0x01),
+    bytes(0x1b, 0x45, 0x01),
+    textLine('¡GRACIAS POR TU COMPRA!'),
+    bytes(0x1b, 0x45, 0x00),
+  )
+
+  for (const line of wrapDescription(RETURNS_NOTICE, RECEIPT_WIDTH)) {
+    parts.push(textLine(line))
+  }
+
+  parts.push(
+    textLine('Síguenos en IG: @madera.boutique'),
+    dashedSeparator(),
+    bytes(0x1b, 0x61, 0x00),
+    bytes(0x1b, 0x64, 0x05),
+    bytes(0x1d, 0x56, 0x42, 0x00),
   )
 
   return mergeByteArrays(parts)
