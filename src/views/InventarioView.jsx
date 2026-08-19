@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Package, Plus, Trash2, FileSpreadsheet } from 'lucide-react'
 import ProductFilters from '../components/caja/ProductFilters'
@@ -8,7 +8,14 @@ import InventoryTable from '../components/inventario/InventoryTable'
 import ManualProductModal from '../components/inventario/ManualProductModal'
 import { db } from '../db/db'
 import { exportInventarioToExcel } from '../lib/exportInventario'
-import { etiquetaProducto, extraerMarcasUnicas, filtrarProductos } from '../lib/productos'
+import {
+  categoriaSigueDisponible,
+  etiquetaProducto,
+  extraerCategoriasPorDepartamento,
+  extraerMarcasPorTaxonomia,
+  filtrarProductos,
+  marcaSigueDisponible,
+} from '../lib/productos'
 
 export default function InventarioView() {
   const productos = useLiveQuery(() => db.productos.orderBy('departamento').toArray(), [])
@@ -18,16 +25,37 @@ export default function InventarioView() {
   const [marca, setMarca] = useState('Todas')
   const [busqueda, setBusqueda] = useState('')
   const [manualOpen, setManualOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState(null)
   const [vaciarOpen, setVaciarOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [processing, setProcessing] = useState(false)
   const [mensaje, setMensaje] = useState(null)
 
-  const marcas = useMemo(() => extraerMarcasUnicas(productos), [productos])
+  const categorias = useMemo(
+    () => extraerCategoriasPorDepartamento(productos, departamento),
+    [productos, departamento],
+  )
+
+  const categoriaActiva = categoriaSigueDisponible(categorias, categoria) ? categoria : 'Todas'
+
+  useEffect(() => {
+    if (categoria !== categoriaActiva) setCategoria(categoriaActiva)
+  }, [categoria, categoriaActiva])
+
+  const marcas = useMemo(
+    () => extraerMarcasPorTaxonomia(productos, departamento, categoriaActiva),
+    [productos, departamento, categoriaActiva],
+  )
+
+  const marcaActiva = marcaSigueDisponible(marcas, marca) ? marca : 'Todas'
+
+  useEffect(() => {
+    if (marca !== marcaActiva) setMarca(marcaActiva)
+  }, [marca, marcaActiva])
 
   const productosFiltrados = useMemo(
-    () => filtrarProductos(productos, departamento, categoria, marca, busqueda),
-    [productos, departamento, categoria, marca, busqueda],
+    () => filtrarProductos(productos, departamento, categoriaActiva, marcaActiva, busqueda),
+    [productos, departamento, categoriaActiva, marcaActiva, busqueda],
   )
 
   function mostrarMensaje(tipo, texto) {
@@ -57,20 +85,38 @@ export default function InventarioView() {
     mostrarMensaje(tipo, texto)
   }, [])
 
+  const cerrarModalProducto = useCallback(() => {
+    setManualOpen(false)
+    setEditingProduct(null)
+  }, [])
+
   const handleManualSave = useCallback(
-    async (producto) => {
+    async (datos) => {
       setProcessing(true)
       try {
-        await db.productos.add(producto)
-        setManualOpen(false)
+        if (editingProduct?.id != null) {
+          await db.productos.update(editingProduct.id, datos)
+          cerrarModalProducto()
+          mostrarMensaje('exito', 'Producto actualizado')
+          return
+        }
+
+        await db.productos.add(datos)
+        cerrarModalProducto()
         mostrarMensaje('exito', 'Producto agregado al inventario')
-      } catch {
-        mostrarMensaje('error', 'No se pudo agregar el producto')
+      } catch (error) {
+        mostrarMensaje(
+          'error',
+          editingProduct?.id != null
+            ? 'No se pudo actualizar el producto'
+            : 'No se pudo agregar el producto',
+        )
+        throw error
       } finally {
         setProcessing(false)
       }
     },
-    [],
+    [cerrarModalProducto, editingProduct],
   )
 
   const handleUpdate = useCallback(async (id, cambios) => {
@@ -151,7 +197,10 @@ export default function InventarioView() {
           </button>
           <button
             type="button"
-            onClick={() => setManualOpen(true)}
+            onClick={() => {
+              setEditingProduct(null)
+              setManualOpen(true)
+            }}
             className="btn-primary flex min-h-11 items-center gap-2 px-5 text-sm"
           >
             <Plus className="h-4 w-4" />
@@ -190,9 +239,10 @@ export default function InventarioView() {
           <ProductFilters
             departamento={departamento}
             onDepartamentoChange={setDepartamento}
-            categoria={categoria}
+            categoria={categoriaActiva}
             onCategoriaChange={setCategoria}
-            marca={marca}
+            categorias={categorias}
+            marca={marcaActiva}
             onMarcaChange={setMarca}
             marcas={marcas}
             busqueda={busqueda}
@@ -203,14 +253,19 @@ export default function InventarioView() {
         <InventoryTable
           productos={productosFiltrados}
           onUpdate={handleUpdate}
+          onEditRequest={(producto) => {
+            setEditingProduct(producto)
+            setManualOpen(true)
+          }}
           onDeleteRequest={setDeleteTarget}
         />
       </div>
 
       <ManualProductModal
         open={manualOpen}
+        producto={editingProduct}
         processing={processing}
-        onClose={() => setManualOpen(false)}
+        onClose={cerrarModalProducto}
         onSave={handleManualSave}
       />
 

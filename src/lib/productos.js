@@ -1,4 +1,4 @@
-import { normalizarCategoria, normalizarDepartamento } from './constants'
+import { CATEGORIAS, normalizarCategoria, normalizarDepartamento } from './constants'
 import { normalizeText } from './utils'
 
 export function etiquetaProducto(producto) {
@@ -22,7 +22,56 @@ export function extraerMarcasUnicas(productos) {
   ].sort((a, b) => a.localeCompare(b, 'es'))
 }
 
-export function filtrarProductos(productos, departamento, categoria, marca, busqueda) {
+/** Categorías con productos dentro del departamento activo (siempre incluye "Todas"). */
+export function extraerCategoriasPorDepartamento(productos, departamento) {
+  if (!productos?.length) return CATEGORIAS
+
+  const filtrados = filtrarProductos(productos, departamento, 'Todas', 'Todas', '')
+  const presentes = new Set()
+
+  for (const producto of filtrados) {
+    const cat = normalizarCategoria(producto.categoria)?.trim()
+    if (cat) presentes.add(cat)
+  }
+
+  const opciones = CATEGORIAS.filter((cat) => cat === 'Todas' || presentes.has(cat))
+  for (const cat of presentes) {
+    if (!opciones.includes(cat)) opciones.push(cat)
+  }
+
+  return opciones
+}
+
+export function categoriaSigueDisponible(categorias, categoriaSeleccionada) {
+  if (!categoriaSeleccionada || categoriaSeleccionada === 'Todas') return true
+
+  const clave = normalizeText(categoriaSeleccionada)
+  return categorias.some((cat) => normalizeText(cat) === clave)
+}
+
+/** Marcas presentes en el subconjunto ya filtrado por departamento y/o categoría. */
+export function extraerMarcasPorTaxonomia(
+  productos,
+  departamento,
+  categoria,
+  { soloConExistencia = false } = {},
+) {
+  const filtrados = filtrarProductos(productos, departamento, categoria, 'Todas', '')
+  const origen = soloConExistencia
+    ? filtrados.filter((producto) => (producto.existencia ?? 0) > 0)
+    : filtrados
+
+  return extraerMarcasUnicas(origen)
+}
+
+export function marcaSigueDisponible(marcas, marcaSeleccionada) {
+  if (!marcaSeleccionada || marcaSeleccionada === 'Todas') return true
+
+  const clave = normalizeText(marcaSeleccionada)
+  return marcas.some((marca) => normalizeText(marca) === clave)
+}
+
+export function filtrarProductos(productos, departamento, categoria, marca = 'Todas', busqueda = '') {
   if (!productos) return []
 
   const termino = normalizeText(busqueda)

@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 import { formatCurrency } from '../../lib/format'
 import { etiquetaProducto } from '../../lib/productos'
 import { cn } from '../../lib/utils'
@@ -26,7 +26,7 @@ function EditableNumber({ value, onSave, min = 0, step = '1', className }) {
   )
 }
 
-export default function InventoryTable({ productos, onUpdate, onDeleteRequest }) {
+export default function InventoryTable({ productos, onUpdate, onEditRequest, onDeleteRequest }) {
   if (!productos) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -102,14 +102,24 @@ export default function InventoryTable({ productos, onUpdate, onDeleteRequest })
                   />
                 </td>
                 <td className="px-4 py-3 text-center">
-                  <button
-                    type="button"
-                    onClick={() => onDeleteRequest(producto)}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full text-red-500 hover:bg-red-50 active:scale-95 dark:hover:bg-red-950/40"
-                    aria-label={`Eliminar ${etiquetaProducto(producto)}`}
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </button>
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => onEditRequest(producto)}
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#D48C70] hover:bg-[#D48C70]/15 active:scale-95 dark:text-[#8C4A32] dark:hover:bg-[#8C4A32]/20"
+                      aria-label={`Editar ${etiquetaProducto(producto)}`}
+                    >
+                      <Pencil className="h-5 w-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDeleteRequest(producto)}
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full text-red-500 hover:bg-red-50 active:scale-95 dark:hover:bg-red-950/40"
+                      aria-label={`Eliminar ${etiquetaProducto(producto)}`}
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             )
