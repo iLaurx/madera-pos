@@ -81,7 +81,7 @@ export default function ManualProductModal({ open, producto, onClose, onSave, pr
   }
 
   const inputClass =
-    'w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-base text-slate-900 outline-none ring-brand-500 focus:border-brand-500 focus:bg-white focus:ring-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:bg-slate-800'
+    'w-full rounded-xl border border-[#D8C9BC] bg-white px-4 py-3.5 text-base text-[#261A12] outline-none ring-brand-500 focus:border-brand-500 focus:bg-white focus:ring-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:bg-slate-800'
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
@@ -94,11 +94,11 @@ export default function ManualProductModal({ open, producto, onClose, onSave, pr
 
       <div className="relative z-10 w-full max-w-lg rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl dark:bg-slate-900">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="flex items-center gap-2 text-xl font-bold text-[#261A12] dark:text-slate-100">
             {isEditing ? (
-              <Pencil className="h-5 w-5 text-[#D48C70]" />
+              <Pencil className="h-5 w-5 text-[#B3542D]" />
             ) : (
-              <Plus className="h-5 w-5 text-[#D48C70]" />
+              <Plus className="h-5 w-5 text-[#B3542D]" />
             )}
             {isEditing ? 'Editar Producto' : 'Alta manual de producto'}
           </h2>
@@ -106,7 +106,7 @@ export default function ManualProductModal({ open, producto, onClose, onSave, pr
             type="button"
             onClick={handleClose}
             disabled={processing}
-            className="flex h-11 w-11 items-center justify-center rounded-xl hover:bg-slate-100 active:scale-95 dark:hover:bg-slate-800"
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-[#543D2E] hover:bg-[#EDE4DA] active:scale-95 dark:text-slate-100 dark:hover:bg-slate-800"
             aria-label="Cerrar"
           >
             <X className="h-6 w-6" />
@@ -116,7 +116,7 @@ export default function ManualProductModal({ open, producto, onClose, onSave, pr
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-slate-600 dark:text-slate-400">
+              <span className="mb-1.5 block text-sm font-medium text-[#8C7A6B] dark:text-slate-400">
                 Departamento
               </span>
               <select
@@ -133,7 +133,7 @@ export default function ManualProductModal({ open, producto, onClose, onSave, pr
             </label>
 
             <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-slate-600 dark:text-slate-400">Categoría</span>
+              <span className="mb-1.5 block text-sm font-medium text-[#8C7A6B] dark:text-slate-400">Categoría</span>
               <select
                 value={form.categoria}
                 onChange={(e) => handleChange('categoria', e.target.value)}
@@ -149,7 +149,7 @@ export default function ManualProductModal({ open, producto, onClose, onSave, pr
           </div>
 
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-600 dark:text-slate-400">Marca</span>
+            <span className="mb-1.5 block text-sm font-medium text-[#8C7A6B] dark:text-slate-400">Marca</span>
             <input
               type="text"
               value={form.marca}
@@ -160,7 +160,7 @@ export default function ManualProductModal({ open, producto, onClose, onSave, pr
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-600 dark:text-slate-400">Descripción</span>
+            <span className="mb-1.5 block text-sm font-medium text-[#8C7A6B] dark:text-slate-400">Descripción</span>
             <input
               type="text"
               required
@@ -172,7 +172,7 @@ export default function ManualProductModal({ open, producto, onClose, onSave, pr
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-600 dark:text-slate-400">Talla / Número</span>
+            <span className="mb-1.5 block text-sm font-medium text-[#8C7A6B] dark:text-slate-400">Talla / Número</span>
             <input
               type="text"
               required
@@ -185,7 +185,7 @@ export default function ManualProductModal({ open, producto, onClose, onSave, pr
 
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-slate-600 dark:text-slate-400">Precio</span>
+              <span className="mb-1.5 block text-sm font-medium text-[#8C7A6B] dark:text-slate-400">Precio</span>
               <input
                 type="number"
                 required
@@ -200,7 +200,7 @@ export default function ManualProductModal({ open, producto, onClose, onSave, pr
             </label>
 
             <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-slate-600 dark:text-slate-400">Existencia</span>
+              <span className="mb-1.5 block text-sm font-medium text-[#8C7A6B] dark:text-slate-400">Existencia</span>
               <input
                 type="number"
                 required
@@ -220,7 +220,7 @@ export default function ManualProductModal({ open, producto, onClose, onSave, pr
             disabled={processing}
             className={cn(
               'flex w-full min-h-14 items-center justify-center rounded-2xl text-base font-bold text-white active:scale-[0.98]',
-              processing ? 'cursor-not-allowed bg-slate-300' : 'bg-[#D48C70] hover:bg-[#C27A5F]',
+              processing ? 'cursor-not-allowed bg-[#D8CCC0] text-[#8C7E72]' : 'bg-[#B3542D] hover:bg-[#9C431F]',
             )}
           >
             {processing ? 'Guardando…' : isEditing ? 'Guardar Cambios' : 'Agregar producto'}

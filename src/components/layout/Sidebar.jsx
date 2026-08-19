@@ -46,10 +46,10 @@ export default function Sidebar({ activeView, onNavigate, isMenuOpen, onClose })
               type="button"
               onClick={() => onNavigate(id)}
               className={cn(
-                'flex min-h-14 items-center gap-3 rounded-full px-4 text-left text-base font-medium transition-colors active:scale-[0.98]',
+                'flex min-h-14 items-center gap-3 rounded-full border px-4 text-left text-base font-medium transition-colors active:scale-[0.98]',
                 isActive
-                  ? 'bg-[#D48C70] text-white shadow-md hover:bg-[#C27A5F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]'
-                  : 'text-[#333333]/80 hover:bg-cream/50 dark:text-[#E5E5E5]/80 dark:hover:bg-[#292524]/60',
+                  ? 'border-[#8A3D1A] bg-[#B3542D] text-white shadow-md ring-1 ring-inset ring-white/20 hover:border-[#7A3518] hover:bg-[#9C431F] dark:border-[#5C2E1F] dark:bg-[#8C4A32] dark:ring-white/10 dark:hover:border-[#4A2518] dark:hover:bg-[#7A3F29]'
+                  : 'border-[#3D2B20]/18 bg-transparent text-[#3D2B20] hover:border-[#3D2B20]/30 hover:bg-[#EFE7DE]/80 dark:border-[#E5E5E5]/12 dark:bg-transparent dark:text-[#E5E5E5]/80 dark:hover:border-[#E5E5E5]/22 dark:hover:bg-[#292524]/60',
               )}
             >
               <Icon className="h-6 w-6 shrink-0" strokeWidth={2} />
@@ -59,7 +59,7 @@ export default function Sidebar({ activeView, onNavigate, isMenuOpen, onClose })
         })}
       </nav>
 
-      <div className="hidden shrink-0 border-t border-[#333333]/10 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] dark:border-[#E5E5E5]/10 md:block">
+      <div className="hidden shrink-0 border-t border-[#3D2B20]/15 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] dark:border-[#E5E5E5]/10 md:block">
         <ThemeToggle />
       </div>
     </aside>

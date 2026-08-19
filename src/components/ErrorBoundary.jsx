@@ -31,7 +31,7 @@ export default class ErrorBoundary extends Component {
           <button
             type="button"
             onClick={this.handleRetry}
-            className="rounded-full bg-[#D48C70] px-5 py-2.5 text-sm font-semibold text-white active:scale-[0.98] dark:bg-[#8C4A32]"
+            className="rounded-full bg-[#B3542D] px-5 py-2.5 text-sm font-semibold text-white active:scale-[0.98] dark:bg-[#8C4A32]"
           >
             Reintentar
           </button>

@@ -5,12 +5,12 @@ import { cn } from '../../lib/utils'
 export { CATEGORIAS, DEPARTAMENTOS }
 
 const selectClass =
-  'w-full rounded-xl border-0 bg-[#FDF6F0] px-4 py-3 text-base text-[#333333] shadow-sm outline-none ring-[#D48C70] focus:ring-2 dark:bg-[#292524] dark:text-[#A8A29E] dark:ring-[#8C4A32]'
+  'w-full rounded-xl border border-[#D8C9BC] bg-white px-4 py-3 text-base text-[#261A12] shadow-sm outline-none ring-[#B3542D] focus:ring-2 dark:border-transparent dark:bg-[#292524] dark:text-[#A8A29E] dark:ring-[#8C4A32]'
 
 function FilterPills({ label, options, value, onChange }) {
   return (
     <div>
-      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-carbon/60 dark:text-[#A8A29E]">
+      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#8C7A6B] dark:text-[#A8A29E]">
         {label}
       </span>
       <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -25,8 +25,8 @@ function FilterPills({ label, options, value, onChange }) {
               className={cn(
                 'shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors active:scale-[0.97]',
                 isActive
-                  ? 'bg-[#D48C70] text-white shadow-sm hover:bg-[#C27A5F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]'
-                  : 'bg-[#FDF6F0] text-[#333333] hover:bg-[#F5EBE3] dark:bg-[#292524] dark:text-[#A8A29E] dark:hover:bg-[#332F2D]',
+                  ? 'bg-[#B3542D] text-white shadow-[0_2px_8px_rgba(179,84,45,0.25)] hover:bg-[#9C431F] dark:bg-[#8C4A32] dark:shadow-sm dark:hover:bg-[#7A3F29]'
+                  : 'bg-[#EDE4DA] text-[#543D2E] hover:bg-[#E2D5C7] dark:bg-[#292524] dark:text-[#A8A29E] dark:hover:bg-[#332F2D]',
               )}
             >
               {option}
@@ -68,7 +68,7 @@ export default function ProductFilters({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-carbon/60 dark:text-[#A8A29E]">
+          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#8C7A6B] dark:text-[#A8A29E]">
             Marca
           </span>
           <select value={marca} onChange={(e) => onMarcaChange(e.target.value)} className={selectClass}>
@@ -82,16 +82,16 @@ export default function ProductFilters({
         </label>
 
         <div className="relative sm:col-span-1">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-carbon/60 dark:text-[#A8A29E]">
+          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#8C7A6B] dark:text-[#A8A29E]">
             Buscar
           </span>
-          <Search className="pointer-events-none absolute bottom-3.5 left-4 h-5 w-5 text-carbon/40 dark:text-[#A8A29E]/60" />
+          <Search className="pointer-events-none absolute bottom-3.5 left-4 h-5 w-5 text-[#8C7A6B] dark:text-[#A8A29E]/60" />
           <input
             type="search"
             value={busqueda}
             onChange={(e) => onBusquedaChange(e.target.value)}
             placeholder="Marca, descripción o talla…"
-            className="w-full rounded-xl border-0 bg-[#FDF6F0] py-3.5 pl-12 pr-4 text-base text-[#333333] shadow-sm outline-none ring-[#D48C70] placeholder:text-[#333333]/40 focus:ring-2 dark:bg-[#292524] dark:text-[#A8A29E] dark:ring-[#8C4A32] dark:placeholder:text-[#A8A29E]/60"
+            className="w-full rounded-xl border border-[#D8C9BC] bg-white py-3.5 pl-12 pr-4 text-base text-[#261A12] shadow-sm outline-none ring-[#B3542D] placeholder:text-[#8C7A6B] focus:ring-2 dark:border-transparent dark:bg-[#292524] dark:text-[#A8A29E] dark:ring-[#8C4A32] dark:placeholder:text-[#A8A29E]/60"
           />
         </div>
       </div>

@@ -42,9 +42,9 @@ export default function BulkImport({ onImport, disabled }) {
   }
 
   return (
-    <div className="panel-card border border-dashed border-[#D48C70]/30 p-4 md:p-5 dark:border-[#332F2D]">
+    <div className="panel-card border border-dashed border-[#B3542D]/30 p-4 md:p-5 dark:border-[#332F2D]">
       <div className="mb-3 flex items-center gap-2">
-        <FileSpreadsheet className="h-5 w-5 text-[#D48C70] dark:text-[#8C4A32]" />
+        <FileSpreadsheet className="h-5 w-5 text-[#B3542D] dark:text-[#8C4A32]" />
         <h3 className="text-base font-semibold text-carbon dark:text-[#E5E5E5]">Carga masiva (CSV / Excel)</h3>
       </div>
 
@@ -75,7 +75,7 @@ export default function BulkImport({ onImport, disabled }) {
             multiple
             accept=".csv,.xlsx,.xls,text/csv"
             onChange={handleFileChange}
-            className="w-full rounded-xl border-0 bg-cream px-3 py-3 text-sm text-carbon shadow-sm file:mr-3 file:rounded-full file:border-0 file:bg-brand-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-brand-800 dark:bg-[#292524] dark:text-[#A8A29E] dark:file:bg-[#332F2D] dark:file:text-[#8C4A32]"
+            className="w-full rounded-xl border border-[#D8C9BC] bg-white px-3 py-3 text-sm text-carbon shadow-sm file:mr-3 file:rounded-full file:border-0 file:bg-brand-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-brand-800 dark:border-transparent dark:bg-[#292524] dark:text-[#A8A29E] dark:file:bg-[#332F2D] dark:file:text-[#8C4A32]"
           />
         </label>
 
@@ -86,8 +86,8 @@ export default function BulkImport({ onImport, disabled }) {
           className={cn(
             'flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full px-6 text-base font-semibold shadow-sm active:scale-[0.98] sm:min-w-[160px]',
             puedeImportar
-              ? 'bg-[#D48C70] text-white hover:bg-[#C27A5F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]'
-              : 'cursor-not-allowed bg-carbon/10 text-carbon/40 dark:bg-[#E5E5E5]/10 dark:text-[#A8A29E]/40',
+              ? 'bg-[#B3542D] text-white hover:bg-[#9C431F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]'
+              : 'cursor-not-allowed bg-[#D8CCC0] text-[#8C7E72] dark:bg-[#E5E5E5]/10 dark:text-[#A8A29E]/40',
           )}
         >
           <Upload className="h-5 w-5" />

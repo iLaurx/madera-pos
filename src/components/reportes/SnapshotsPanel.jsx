@@ -38,7 +38,7 @@ export default function SnapshotsPanel({ onMensaje }) {
     <>
       <div className="panel-card p-4 md:p-5">
         <div className="mb-3 flex items-center gap-2">
-          <History className="h-5 w-5 text-[#D48C70] dark:text-[#8C4A32]" />
+          <History className="h-5 w-5 text-[#B3542D] dark:text-[#8C4A32]" />
           <h3 className="text-base font-semibold text-carbon dark:text-[#E5E5E5]">
             Puntos de Restauración (Snapshots)
           </h3>
@@ -52,7 +52,7 @@ export default function SnapshotsPanel({ onMensaje }) {
         {!snapshots ? (
           <p className="text-sm text-carbon/60 dark:text-[#A8A29E]">Cargando snapshots…</p>
         ) : snapshots.length === 0 ? (
-          <p className="rounded-xl bg-[#D48C70]/10 px-4 py-3 text-sm text-carbon/70 dark:bg-[#292524] dark:text-[#A8A29E]">
+          <p className="rounded-xl bg-[#B3542D]/10 px-4 py-3 text-sm text-carbon/70 dark:bg-[#292524] dark:text-[#A8A29E]">
             Aún no hay puntos de restauración. Se creará uno al cerrar el día con éxito.
           </p>
         ) : (
@@ -64,7 +64,7 @@ export default function SnapshotsPanel({ onMensaje }) {
               return (
                 <li
                   key={snapshot.id}
-                  className="flex flex-col gap-3 rounded-xl bg-[#D48C70]/10 px-4 py-3 shadow-sm dark:border dark:border-[#332F2D] dark:bg-[#24211F] sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-3 rounded-xl bg-[#B3542D]/10 px-4 py-3 shadow-sm dark:border dark:border-[#332F2D] dark:bg-[#24211F] sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
                     <p className="font-semibold text-carbon dark:text-[#E5E5E5]">
@@ -84,8 +84,8 @@ export default function SnapshotsPanel({ onMensaje }) {
                     className={cn(
                       'flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold shadow-sm active:scale-[0.98]',
                       restaurando
-                        ? 'cursor-not-allowed bg-carbon/10 text-carbon/40 dark:bg-[#E5E5E5]/10 dark:text-[#A8A29E]/40'
-                        : 'bg-[#D48C70] text-white hover:bg-[#C27A5F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]',
+                        ? 'cursor-not-allowed bg-[#D8CCC0] text-[#8C7E72] dark:bg-[#E5E5E5]/10 dark:text-[#A8A29E]/40'
+                        : 'bg-[#B3542D] text-white hover:bg-[#9C431F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]',
                     )}
                   >
                     <RotateCcw className="h-4 w-4" />

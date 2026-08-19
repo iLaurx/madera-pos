@@ -104,7 +104,7 @@ export default function ReportesView() {
     <section className="flex h-full flex-col overflow-hidden rounded-xl bg-cream shadow-md dark:bg-[#1C1917]">
       <header className="view-header flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-4 shadow-sm md:px-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cream/90 text-[#D48C70] shadow-sm dark:bg-[#292524]/90 dark:text-[#8C4A32]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cream/90 text-[#B3542D] shadow-sm dark:bg-[#292524]/90 dark:text-[#8C4A32]">
             <BarChart3 className="h-5 w-5" />
           </div>
           <div>
@@ -164,8 +164,8 @@ export default function ReportesView() {
             className={cn(
               'flex w-full min-h-14 items-center justify-center gap-2 rounded-full text-base font-bold shadow-md active:scale-[0.98]',
               cerrandoDia
-                ? 'cursor-not-allowed bg-carbon/20 text-carbon/50 dark:bg-[#E5E5E5]/10 dark:text-[#A8A29E]/40'
-                : 'bg-[#D48C70] text-white hover:bg-[#C27A5F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]',
+                ? 'cursor-not-allowed bg-[#D8CCC0] text-[#8C7E72] dark:bg-[#E5E5E5]/10 dark:text-[#A8A29E]/40'
+                : 'bg-[#B3542D] text-white hover:bg-[#9C431F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]',
             )}
           >
             <Moon className="h-5 w-5" />

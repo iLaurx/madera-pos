@@ -65,7 +65,7 @@ export default function BackupRestorePanel({ onMensaje }) {
     <>
       <div className="panel-card p-4 md:p-5">
         <div className="mb-3 flex items-center gap-2">
-          <Database className="h-5 w-5 text-[#D48C70] dark:text-[#8C4A32]" />
+          <Database className="h-5 w-5 text-[#B3542D] dark:text-[#8C4A32]" />
           <h3 className="text-base font-semibold text-carbon dark:text-[#E5E5E5]">Respaldo y restauración</h3>
         </div>
 
@@ -83,7 +83,7 @@ export default function BackupRestorePanel({ onMensaje }) {
               'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold shadow-sm active:scale-[0.98] sm:min-w-[200px]',
               exportando || restaurando
                 ? 'cursor-not-allowed bg-carbon/10 text-carbon/40 dark:bg-[#E5E5E5]/10 dark:text-[#A8A29E]/40'
-                : 'bg-[#D48C70] text-white hover:bg-[#C27A5F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]',
+                : 'bg-[#B3542D] text-white hover:bg-[#9C431F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]',
             )}
           >
             <Download className="h-4 w-4" />
@@ -98,7 +98,7 @@ export default function BackupRestorePanel({ onMensaje }) {
               'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold shadow-sm active:scale-[0.98] sm:min-w-[200px]',
               exportando || restaurando
                 ? 'cursor-not-allowed bg-carbon/10 text-carbon/40 dark:bg-[#E5E5E5]/10 dark:text-[#A8A29E]/40'
-                : 'bg-[#D48C70]/15 text-carbon hover:bg-[#D48C70]/25 dark:bg-[#292524] dark:text-[#A8A29E] dark:hover:bg-[#332F2D]',
+                : 'bg-[#B3542D]/15 text-carbon hover:bg-[#B3542D]/25 dark:bg-[#292524] dark:text-[#A8A29E] dark:hover:bg-[#332F2D]',
             )}
           >
             <Upload className="h-4 w-4" />

@@ -10,7 +10,7 @@ const METODOS = [
 ]
 
 const inputClass =
-  'w-full rounded-xl border-0 bg-cream px-4 py-4 text-2xl font-bold text-carbon shadow-sm outline-none ring-brand-500 focus:ring-2 dark:bg-[#292524] dark:text-[#E5E5E5] dark:ring-[#8C4A32]'
+  'w-full rounded-xl border border-[#D8C9BC] bg-white px-4 py-4 text-2xl font-bold text-carbon shadow-sm outline-none ring-brand-500 focus:ring-2 dark:border-transparent dark:bg-[#292524] dark:text-[#E5E5E5] dark:ring-[#8C4A32]'
 
 export default function CheckoutModal({ open, total, onConfirm, onClose, processing }) {
   const [metodoPago, setMetodoPago] = useState('efectivo')
@@ -56,14 +56,14 @@ export default function CheckoutModal({ open, total, onConfirm, onClose, process
             type="button"
             onClick={handleClose}
             disabled={processing}
-            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-[#D48C70]/15 active:scale-95 dark:hover:bg-[#8C4A32]/20"
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-[#B3542D]/15 active:scale-95 dark:hover:bg-[#8C4A32]/20"
             aria-label="Cerrar"
           >
             <X className="h-6 w-6" />
           </button>
         </div>
 
-        <div className="mb-6 rounded-xl bg-[#D48C70]/10 p-5 text-center shadow-sm dark:bg-[#8C4A32]/20">
+        <div className="mb-6 rounded-xl bg-[#B3542D]/10 p-5 text-center shadow-sm dark:bg-[#8C4A32]/20">
           <p className="text-sm font-medium text-carbon/60 dark:text-[#A8A29E]">Total a cobrar</p>
           <p className="mt-1 text-4xl font-bold text-carbon dark:text-[#E5E5E5]">{formatCurrency(total)}</p>
         </div>
@@ -78,8 +78,8 @@ export default function CheckoutModal({ open, total, onConfirm, onClose, process
               className={cn(
                 'flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-full text-base font-semibold shadow-sm transition-colors active:scale-[0.98]',
                 metodoPago === id
-                  ? 'bg-[#D48C70] text-white hover:bg-[#C27A5F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]'
-                  : 'bg-[#FDF6F0] text-[#333333] hover:bg-[#F5EBE3] dark:bg-[#292524] dark:text-[#A8A29E] dark:hover:bg-[#332F2D]',
+                  ? 'bg-[#B3542D] text-white hover:bg-[#9C431F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]'
+                  : 'bg-[#EDE4DA] text-[#543D2E] hover:bg-[#E2D5C7] dark:bg-[#292524] dark:text-[#A8A29E] dark:hover:bg-[#332F2D]',
               )}
             >
               <Icon className="h-6 w-6" />
@@ -112,7 +112,7 @@ export default function CheckoutModal({ open, total, onConfirm, onClose, process
                   'rounded-xl p-4 text-center',
                   recibido >= total
                     ? 'bg-brand-100 dark:bg-[#292524]'
-                    : 'bg-[#D48C70]/15 dark:bg-[#8C4A32]/15',
+                    : 'bg-[#B3542D]/15 dark:bg-[#8C4A32]/15',
                 )}
               >
                 <p className="text-sm font-medium text-carbon/70 dark:text-[#A8A29E]">Cambio</p>
@@ -144,8 +144,8 @@ export default function CheckoutModal({ open, total, onConfirm, onClose, process
           className={cn(
             'flex w-full min-h-16 items-center justify-center rounded-full text-lg font-bold shadow-md transition-colors active:scale-[0.98]',
             pagoValido && !processing
-              ? 'bg-[#D48C70] text-white hover:bg-[#C27A5F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]'
-              : 'cursor-not-allowed bg-carbon/10 text-carbon/40 dark:bg-[#E5E5E5]/10 dark:text-[#A8A29E]/40',
+              ? 'bg-[#B3542D] text-white hover:bg-[#9C431F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]'
+              : 'cursor-not-allowed bg-[#D8CCC0] text-[#8C7E72] dark:bg-[#E5E5E5]/10 dark:text-[#A8A29E]/40',
           )}
         >
           {processing ? 'Procesando…' : `Confirmar cobro (${formatCurrency(total)})`}

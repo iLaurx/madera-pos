@@ -19,7 +19,7 @@ function EditableNumber({ value, onSave, min = 0, step = '1', className }) {
         }
       }}
       className={cn(
-        'w-full min-w-[5rem] rounded-xl border-0 bg-cream px-3 py-2.5 text-base font-medium text-carbon shadow-sm outline-none ring-brand-500 focus:ring-2 dark:bg-[#292524] dark:text-[#E5E5E5] dark:ring-[#8C4A32]',
+        'w-full min-w-[5rem] rounded-xl border border-[#D8C9BC] bg-white px-3 py-2.5 text-base font-medium text-carbon shadow-sm outline-none ring-brand-500 focus:ring-2 dark:border-transparent dark:bg-[#292524] dark:text-[#E5E5E5] dark:ring-[#8C4A32]',
         className,
       )}
     />
@@ -71,8 +71,8 @@ export default function InventoryTable({ productos, onUpdate, onEditRequest, onD
               <tr
                 key={producto.id}
                 className={cn(
-                  'transition-colors hover:bg-[#D48C70]/15 dark:hover:bg-[#8C4A32]/20',
-                  index % 2 === 1 && 'bg-[#D48C70]/10 dark:bg-[#24211F]',
+                  'transition-colors hover:bg-[#B3542D]/15 dark:hover:bg-[#8C4A32]/20',
+                  index % 2 === 1 && 'bg-[#B3542D]/10 dark:bg-[#24211F]',
                 )}
               >
                 <td className="px-4 py-3 text-sm font-medium text-carbon/80 dark:text-[#A8A29E]">
@@ -91,7 +91,7 @@ export default function InventoryTable({ productos, onUpdate, onEditRequest, onD
                     value={producto.precio}
                     step="0.01"
                     onSave={(precio) => onUpdate(producto.id, { precio })}
-                    className="text-[#D48C70] dark:text-[#8C4A32]"
+                    className="text-[#B3542D] dark:text-[#8C4A32]"
                   />
                   <p className="mt-0.5 text-xs text-carbon/50 dark:text-[#A8A29E]/80">{formatCurrency(producto.precio)}</p>
                 </td>
@@ -106,7 +106,7 @@ export default function InventoryTable({ productos, onUpdate, onEditRequest, onD
                     <button
                       type="button"
                       onClick={() => onEditRequest(producto)}
-                      className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#D48C70] hover:bg-[#D48C70]/15 active:scale-95 dark:text-[#8C4A32] dark:hover:bg-[#8C4A32]/20"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#B3542D] hover:bg-[#B3542D]/15 active:scale-95 dark:text-[#8C4A32] dark:hover:bg-[#8C4A32]/20"
                       aria-label={`Editar ${etiquetaProducto(producto)}`}
                     >
                       <Pencil className="h-5 w-5" />

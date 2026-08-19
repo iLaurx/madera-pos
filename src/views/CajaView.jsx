@@ -289,7 +289,7 @@ export default function CajaView() {
     <section className="relative flex h-full flex-col overflow-hidden rounded-xl bg-cream shadow-md dark:bg-[#1C1917]">
       <header className="view-header flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3 shadow-sm md:px-6 md:py-4">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cream/90 text-[#D48C70] shadow-sm dark:bg-[#292524]/90 dark:text-[#8C4A32]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cream/90 text-[#B3542D] shadow-sm dark:bg-[#292524]/90 dark:text-[#8C4A32]">
             <ShoppingCart className="h-5 w-5" />
           </div>
           <div>

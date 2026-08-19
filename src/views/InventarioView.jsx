@@ -172,7 +172,7 @@ export default function InventarioView() {
     <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-cream shadow-md dark:bg-[#1C1917]">
       <header className="view-header flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-4 shadow-sm md:px-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cream/90 text-[#D48C70] shadow-sm dark:bg-[#292524]/90 dark:text-[#8C4A32]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cream/90 text-[#B3542D] shadow-sm dark:bg-[#292524]/90 dark:text-[#8C4A32]">
             <Package className="h-5 w-5" />
           </div>
           <div>

@@ -5,9 +5,9 @@ import { cn } from '../../lib/utils'
 function SummaryCard({ label, value, icon: Icon, accent = 'brand' }) {
   const accents = {
     brand: 'bg-brand-100 text-brand-700 dark:bg-[#292524] dark:text-[#8C4A32]',
-    emerald: 'bg-[#D48C70]/15 text-carbon dark:bg-[#292524] dark:text-[#A8A29E]',
+    emerald: 'bg-[#B3542D]/15 text-carbon dark:bg-[#292524] dark:text-[#A8A29E]',
     violet: 'bg-brand-50 text-brand-800 dark:bg-[#24211F] dark:text-[#8C4A32]',
-    amber: 'bg-[#D48C70]/20 text-carbon dark:bg-[#292524] dark:text-[#A8A29E]',
+    amber: 'bg-[#B3542D]/20 text-carbon dark:bg-[#292524] dark:text-[#A8A29E]',
   }
 
   return (

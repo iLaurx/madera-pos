@@ -10,8 +10,8 @@
   }
 
   body {
-    background-color: #fffffc;
-    color: #333333;
+    background-color: #d0a890;
+    color: #261a12;
     font-family: 'Quicksand', sans-serif;
     @apply antialiased;
     touch-action: manipulation;
@@ -85,7 +85,7 @@
   }
 
   .table-row-accent:nth-child(odd) {
-    background-color: rgb(212 140 112 / 0.1);
+    background-color: rgb(179 84 45 / 0.06);
   }
 
   .dark .table-row-accent:nth-child(odd) {
@@ -95,32 +95,36 @@
 
 @layer components {
   .panel-surface {
-    @apply rounded-xl shadow-md;
-    background-color: #fffffc;
+    @apply rounded-xl border;
+    background-color: #ffffff;
+    border-color: #e8dfd5;
+    box-shadow: 0 6px 18px rgb(100 60 30 / 0.07);
   }
 
   .dark .panel-surface {
     background-color: #24211f;
-    @apply border border-[#332f2d];
+    @apply border-[#332f2d] shadow-md;
   }
 
   .panel-card {
-    @apply rounded-xl shadow-sm;
-    background-color: #fffffc;
+    @apply rounded-xl border;
+    background-color: #ffffff;
+    border-color: #e8dfd5;
+    box-shadow: 0 4px 12px rgb(100 60 30 / 0.05);
   }
 
   .dark .panel-card {
     background-color: #24211f;
-    @apply border border-[#332f2d];
+    @apply border-[#332f2d] shadow-sm;
   }
 
   .btn-primary {
     @apply rounded-full font-semibold text-white shadow-sm transition-colors active:scale-[0.98];
-    background-color: #d48c70;
+    background-color: #b3542d;
   }
 
   .btn-primary:hover {
-    background-color: #c27a5f;
+    background-color: #9c431f;
   }
 
   .dark .btn-primary {

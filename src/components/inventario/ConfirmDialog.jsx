@@ -45,7 +45,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onCancel}
             disabled={processing}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full hover:bg-[#D48C70]/10 active:scale-95 dark:hover:bg-[#8C4A32]/20"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full hover:bg-[#B3542D]/10 active:scale-95 dark:hover:bg-[#8C4A32]/20"
             aria-label="Cerrar"
           >
             <X className="h-5 w-5" />
@@ -69,7 +69,7 @@ export default function ConfirmDialog({
               'flex min-h-12 flex-1 items-center justify-center rounded-full text-base font-semibold text-white shadow-sm active:scale-[0.98]',
               variant === 'danger'
                 ? 'bg-red-600 hover:bg-red-700'
-                : 'bg-[#D48C70] hover:bg-[#C27A5F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]',
+                : 'bg-[#B3542D] hover:bg-[#9C431F] dark:bg-[#8C4A32] dark:hover:bg-[#7A3F29]',
               processing && 'cursor-not-allowed opacity-60',
             )}
           >
