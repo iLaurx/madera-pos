@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { ShoppingCart } from 'lucide-react'
 import CartPanel from '../components/caja/CartPanel'
@@ -10,10 +10,13 @@ import ProductGrid from '../components/caja/ProductGrid'
 import { db } from '../db/db'
 import {
   cantidadEnCarritoPorProducto,
+  categoriaSigueDisponible,
   crearCartItemId,
   etiquetaProducto,
-  extraerMarcasUnicas,
+  extraerCategoriasPorDepartamento,
+  extraerMarcasPorTaxonomia,
   filtrarProductos,
+  marcaSigueDisponible,
   ordenarStockPrimero,
 } from '../lib/productos'
 import { safeVibrate } from '../lib/safeWeb'
@@ -34,14 +37,34 @@ export default function CajaView() {
 
   const productos = useLiveQuery(() => db.productos.toArray(), [])
 
-  const marcas = useMemo(() => extraerMarcasUnicas(productos), [productos])
+  const categorias = useMemo(
+    () => extraerCategoriasPorDepartamento(productos, departamento),
+    [productos, departamento],
+  )
+
+  const categoriaActiva = categoriaSigueDisponible(categorias, categoria) ? categoria : 'Todas'
+
+  useEffect(() => {
+    if (categoria !== categoriaActiva) setCategoria(categoriaActiva)
+  }, [categoria, categoriaActiva])
+
+  const marcas = useMemo(
+    () => extraerMarcasPorTaxonomia(productos, departamento, categoriaActiva, { soloConExistencia: true }),
+    [productos, departamento, categoriaActiva],
+  )
+
+  const marcaActiva = marcaSigueDisponible(marcas, marca) ? marca : 'Todas'
+
+  useEffect(() => {
+    if (marca !== marcaActiva) setMarca(marcaActiva)
+  }, [marca, marcaActiva])
 
   const productosFiltrados = useMemo(
     () =>
       ordenarStockPrimero(
-        filtrarProductos(productos, departamento, categoria, marca, busqueda),
+        filtrarProductos(productos, departamento, categoriaActiva, marcaActiva, busqueda),
       ),
-    [productos, departamento, categoria, marca, busqueda],
+    [productos, departamento, categoriaActiva, marcaActiva, busqueda],
   )
 
   const itemsCarrito = useMemo(
@@ -288,9 +311,10 @@ export default function CajaView() {
       <ProductFilters
         departamento={departamento}
         onDepartamentoChange={setDepartamento}
-        categoria={categoria}
+        categoria={categoriaActiva}
         onCategoriaChange={setCategoria}
-        marca={marca}
+        categorias={categorias}
+        marca={marcaActiva}
         onMarcaChange={setMarca}
         marcas={marcas}
         busqueda={busqueda}

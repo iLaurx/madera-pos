@@ -43,6 +43,7 @@ export default function ProductFilters({
   onDepartamentoChange,
   categoria,
   onCategoriaChange,
+  categorias = CATEGORIAS,
   marca,
   onMarcaChange,
   marcas = [],
@@ -60,7 +61,7 @@ export default function ProductFilters({
 
       <FilterPills
         label="Categoría"
-        options={CATEGORIAS}
+        options={categorias}
         value={categoria}
         onChange={onCategoriaChange}
       />
