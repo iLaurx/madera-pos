@@ -4,6 +4,7 @@ import { ShoppingCart } from 'lucide-react'
 import CartPanel from '../components/caja/CartPanel'
 import CheckoutModal from '../components/caja/CheckoutModal'
 import PriceEditModal from '../components/caja/PriceEditModal'
+import PrinterStatusButton from '../components/caja/PrinterStatusButton'
 import ProductFilters from '../components/caja/ProductFilters'
 import ProductGrid from '../components/caja/ProductGrid'
 import { db } from '../db/db'
@@ -16,7 +17,7 @@ import {
   ordenarStockPrimero,
 } from '../lib/productos'
 import { safeVibrate } from '../lib/safeWeb'
-import { printReceipt } from '../utils/printer'
+import { printReceipt, connectPrinter } from '../utils/printer'
 
 export default function CajaView() {
   const [departamento, setDepartamento] = useState('Todos')
@@ -174,6 +175,17 @@ export default function CajaView() {
           subtotal: item.precio * item.cantidad,
         }))
 
+        let printerSession = { success: false }
+        try {
+          printerSession = await connectPrinter()
+        } catch (printerError) {
+          console.error('connectPrinter:', printerError)
+          printerSession = {
+            success: false,
+            error: printerError?.message || 'No se pudo conectar la impresora',
+          }
+        }
+
         const ventaId = await db.transaction('rw', db.ventas, db.productos, async () => {
           const cantidadPorProducto = carrito.reduce((acc, item) => {
             acc[item.productoId] = (acc[item.productoId] ?? 0) + item.cantidad
@@ -207,13 +219,24 @@ export default function CajaView() {
           return id
         })
 
-        const printResult = await printReceipt({
-          id: ventaId,
-          fecha: fechaVenta,
-          total,
-          metodoPago,
-          items: itemsVenta,
-        })
+        let printResult = printerSession
+        if (printerSession.success) {
+          try {
+            printResult = await printReceipt({
+              id: ventaId,
+              fecha: fechaVenta,
+              total,
+              metodoPago,
+              items: itemsVenta,
+            })
+          } catch (printError) {
+            console.error('printReceipt:', printError)
+            printResult = {
+              success: false,
+              error: printError?.message || 'Error inesperado al imprimir',
+            }
+          }
+        }
 
         setCarrito([])
         setCheckoutOpen(false)
@@ -241,16 +264,25 @@ export default function CajaView() {
 
   return (
     <section className="relative flex h-full flex-col overflow-hidden rounded-xl bg-cream shadow-md dark:bg-[#1C1917]">
-      <header className="view-header flex shrink-0 items-center gap-3 px-4 py-3 shadow-sm md:px-6 md:py-4">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cream/90 text-[#D48C70] shadow-sm dark:bg-[#292524]/90 dark:text-[#8C4A32]">
-          <ShoppingCart className="h-5 w-5" />
+      <header className="view-header flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3 shadow-sm md:px-6 md:py-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cream/90 text-[#D48C70] shadow-sm dark:bg-[#292524]/90 dark:text-[#8C4A32]">
+            <ShoppingCart className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-carbon dark:text-[#E5E5E5] md:text-xl">Caja</h2>
+            <p className="text-xs text-carbon/70 dark:text-[#A8A29E] md:text-sm">
+              {productos ? `${productos.length} productos en catálogo` : 'Cargando…'}
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-lg font-semibold text-carbon dark:text-[#E5E5E5] md:text-xl">Caja</h2>
-          <p className="text-xs text-carbon/70 dark:text-[#A8A29E] md:text-sm">
-            {productos ? `${productos.length} productos en catálogo` : 'Cargando…'}
-          </p>
-        </div>
+
+        <PrinterStatusButton
+          onError={(texto) => {
+            setMensaje({ tipo: 'error', texto })
+            setTimeout(() => setMensaje(null), 4000)
+          }}
+        />
       </header>
 
       <ProductFilters
