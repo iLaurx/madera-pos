@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Plus, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Pencil, Plus, X } from 'lucide-react'
 import { CATEGORIAS_PRODUCTO, DEPARTAMENTOS_PRODUCTO } from '../../lib/constants'
 import { cn } from '../../lib/utils'
 
@@ -13,8 +13,33 @@ const INITIAL = {
   existencia: '',
 }
 
-export default function ManualProductModal({ open, onClose, onSave, processing }) {
+function productoToForm(producto) {
+  if (!producto) return INITIAL
+
+  return {
+    departamento: producto.departamento?.trim() || DEPARTAMENTOS_PRODUCTO[0],
+    categoria: producto.categoria?.trim() || CATEGORIAS_PRODUCTO[0],
+    marca: producto.marca ?? '',
+    descripcion: producto.descripcion ?? producto.marcaDescripcion ?? '',
+    talla: producto.talla ?? '',
+    precio: producto.precio == null ? '' : String(producto.precio),
+    existencia: producto.existencia == null ? '' : String(producto.existencia),
+  }
+}
+
+function opcionesConValor(lista, valor) {
+  if (!valor || lista.includes(valor)) return lista
+  return [valor, ...lista]
+}
+
+export default function ManualProductModal({ open, producto, onClose, onSave, processing }) {
   const [form, setForm] = useState(INITIAL)
+  const isEditing = Boolean(producto?.id)
+
+  useEffect(() => {
+    if (!open) return
+    setForm(productoToForm(producto))
+  }, [open, producto])
 
   if (!open) return null
 
@@ -39,17 +64,20 @@ export default function ManualProductModal({ open, onClose, onSave, processing }
     if (!Number.isFinite(precio) || precio < 0) return
     if (!Number.isFinite(existencia) || existencia < 0) return
 
-    await onSave({
-      departamento: form.departamento,
-      categoria: form.categoria,
-      marca: form.marca.trim(),
-      descripcion: form.descripcion.trim(),
-      talla: form.talla.trim(),
-      precio,
-      existencia,
-    })
-
-    setForm(INITIAL)
+    try {
+      await onSave({
+        departamento: form.departamento,
+        categoria: form.categoria,
+        marca: form.marca.trim(),
+        descripcion: form.descripcion.trim(),
+        talla: form.talla.trim(),
+        precio,
+        existencia,
+      })
+      setForm(INITIAL)
+    } catch {
+      // El padre muestra el error y el formulario conserva los valores.
+    }
   }
 
   const inputClass =
@@ -67,8 +95,12 @@ export default function ManualProductModal({ open, onClose, onSave, processing }
       <div className="relative z-10 w-full max-w-lg rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl dark:bg-slate-900">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-slate-100">
-            <Plus className="h-5 w-5 text-[#D48C70]" />
-            Alta manual de producto
+            {isEditing ? (
+              <Pencil className="h-5 w-5 text-[#D48C70]" />
+            ) : (
+              <Plus className="h-5 w-5 text-[#D48C70]" />
+            )}
+            {isEditing ? 'Editar Producto' : 'Alta manual de producto'}
           </h2>
           <button
             type="button"
@@ -92,7 +124,7 @@ export default function ManualProductModal({ open, onClose, onSave, processing }
                 onChange={(e) => handleChange('departamento', e.target.value)}
                 className={inputClass}
               >
-                {DEPARTAMENTOS_PRODUCTO.map((dep) => (
+                {opcionesConValor(DEPARTAMENTOS_PRODUCTO, form.departamento).map((dep) => (
                   <option key={dep} value={dep}>
                     {dep}
                   </option>
@@ -107,7 +139,7 @@ export default function ManualProductModal({ open, onClose, onSave, processing }
                 onChange={(e) => handleChange('categoria', e.target.value)}
                 className={inputClass}
               >
-                {CATEGORIAS_PRODUCTO.map((cat) => (
+                {opcionesConValor(CATEGORIAS_PRODUCTO, form.categoria).map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
                   </option>
@@ -191,7 +223,7 @@ export default function ManualProductModal({ open, onClose, onSave, processing }
               processing ? 'cursor-not-allowed bg-slate-300' : 'bg-[#D48C70] hover:bg-[#C27A5F]',
             )}
           >
-            {processing ? 'Guardando…' : 'Agregar producto'}
+            {processing ? 'Guardando…' : isEditing ? 'Guardar Cambios' : 'Agregar producto'}
           </button>
         </form>
       </div>
