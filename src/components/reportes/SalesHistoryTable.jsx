@@ -1,9 +1,16 @@
+import { Printer, Undo2 } from 'lucide-react'
 import { formatCurrency } from '../../lib/format'
 import { formatFecha, formatHora } from '../../lib/date'
 import { contarUnidades, formatItems, formatMetodoPago } from '../../lib/exportVentas'
 import { cn } from '../../lib/utils'
 
-export default function SalesHistoryTable({ ventas }) {
+export default function SalesHistoryTable({
+  ventas,
+  onReimprimir,
+  reimprimiendoId,
+  onDevolver,
+  devolviendoId,
+}) {
   if (!ventas) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
@@ -27,7 +34,7 @@ export default function SalesHistoryTable({ ventas }) {
 
   return (
     <div className="min-h-0 flex-1 overflow-auto">
-      <table className="w-full min-w-[720px] text-left">
+      <table className="w-full min-w-[800px] text-left">
         <thead className="sticky top-0 z-10 bg-cream text-xs font-semibold uppercase tracking-wide text-carbon/70 dark:bg-[#1C1917] dark:text-[#A8A29E]">
           <tr>
             <th className="px-4 py-3">Fecha</th>
@@ -35,6 +42,7 @@ export default function SalesHistoryTable({ ventas }) {
             <th className="px-4 py-3">Items cobrados</th>
             <th className="px-4 py-3">Método</th>
             <th className="px-4 py-3 text-right">Total</th>
+            <th className="px-4 py-3 text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -72,6 +80,30 @@ export default function SalesHistoryTable({ ventas }) {
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-right text-base font-bold text-[#B3542D] dark:text-[#E5E5E5]">
                 {formatCurrency(venta.total)}
+              </td>
+              <td className="px-4 py-3 text-center">
+                <div className="flex items-center justify-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onReimprimir?.(venta)}
+                    disabled={reimprimiendoId != null || devolviendoId != null}
+                    title="Reimprimir ticket"
+                    aria-label={`Reimprimir ticket ${venta.id}`}
+                    className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#B3542D] hover:bg-[#B3542D]/15 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#E5E5E5] dark:hover:bg-[#8C4A32]/25"
+                  >
+                    <Printer className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDevolver?.(venta)}
+                    disabled={reimprimiendoId != null || devolviendoId != null}
+                    title="Devolver venta"
+                    aria-label={`Devolver venta ${venta.id}`}
+                    className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#B3542D] hover:bg-red-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 dark:text-[#C45C3A] dark:hover:bg-red-950/40"
+                  >
+                    <Undo2 className="h-5 w-5" />
+                  </button>
+                </div>
               </td>
             </tr>
           ))}

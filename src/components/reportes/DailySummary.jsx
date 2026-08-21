@@ -23,29 +23,29 @@ function SummaryCard({ label, value, icon: Icon, accent = 'brand' }) {
   )
 }
 
-export default function DailySummary({ resumen }) {
+export default function DailySummary({ resumen, etiquetaPeriodo = 'hoy' }) {
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <SummaryCard
-        label="Total vendido hoy"
+        label={`Total vendido ${etiquetaPeriodo}`}
         value={formatCurrency(resumen.totalHoy)}
         icon={TrendingUp}
         accent="brand"
       />
       <SummaryCard
-        label="Productos vendidos hoy"
+        label={`Productos vendidos ${etiquetaPeriodo}`}
         value={resumen.unidadesHoy}
         icon={Package}
         accent="emerald"
       />
       <SummaryCard
-        label="Efectivo hoy"
+        label={`Efectivo ${etiquetaPeriodo}`}
         value={formatCurrency(resumen.efectivoHoy)}
         icon={Banknote}
         accent="amber"
       />
       <SummaryCard
-        label="Transferencia hoy"
+        label={`Transferencia ${etiquetaPeriodo}`}
         value={formatCurrency(resumen.transferenciaHoy)}
         icon={Smartphone}
         accent="violet"

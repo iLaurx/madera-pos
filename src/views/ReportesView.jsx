@@ -1,21 +1,28 @@
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { BarChart3, FileSpreadsheet, Moon } from 'lucide-react'
+import { BarChart3, FileSpreadsheet, Moon, Printer } from 'lucide-react'
+import ConfirmDialog from '../components/inventario/ConfirmDialog'
 import BackupRestorePanel from '../components/reportes/BackupRestorePanel'
 import DailySummary from '../components/reportes/DailySummary'
+import DateFilterBar from '../components/reportes/DateFilterBar'
 import SalesHistoryTable from '../components/reportes/SalesHistoryTable'
 import SnapshotsPanel from '../components/reportes/SnapshotsPanel'
 import { exportarRespaldoJSON } from '../lib/backupDb'
-import { isSameDay } from '../lib/date'
+import {
+  addCalendarDays,
+  formatFecha,
+  isSameDay,
+  parseLocalISODate,
+  toLocalISODate,
+} from '../lib/date'
 import { exportVentasDelDiaToExcel, exportVentasToExcel } from '../lib/exportVentas'
 import { crearSnapshot } from '../lib/snapshots'
 import { cn } from '../lib/utils'
 import { db } from '../db/db'
+import { connectPrinter, isPrinterConnected, printReceipt, sendDailyCloseReceipt } from '../utils/printer'
 
-function calcularResumenDia(ventas) {
-  const ventasHoy = ventas.filter((v) => isSameDay(v.fecha))
-
-  return ventasHoy.reduce(
+function calcularResumen(ventas) {
+  return ventas.reduce(
     (acc, venta) => {
       acc.totalHoy += venta.total ?? 0
 
@@ -41,30 +48,158 @@ export default function ReportesView() {
   const ventas = useLiveQuery(() => db.ventas.orderBy('fecha').reverse().toArray(), [])
   const [mensaje, setMensaje] = useState(null)
   const [cerrandoDia, setCerrandoDia] = useState(false)
+  const [imprimiendoCorte, setImprimiendoCorte] = useState(false)
+  const [reimprimiendoId, setReimprimiendoId] = useState(null)
+  const [ventaADevolver, setVentaADevolver] = useState(null)
+  const [devolviendoId, setDevolviendoId] = useState(null)
+  const [fechaFiltro, setFechaFiltro] = useState(() => toLocalISODate(new Date()))
+
+  const fechaHoy = toLocalISODate(new Date())
+  const fechaAyer = toLocalISODate(addCalendarDays(new Date(), -1))
 
   const ventasHoy = useMemo(
     () => (ventas ?? []).filter((venta) => isSameDay(venta.fecha)),
     [ventas],
   )
 
+  const ventasFiltradas = useMemo(() => {
+    if (!ventas) return null
+    if (fechaFiltro == null) return ventas
+    return ventas.filter((venta) => toLocalISODate(venta.fecha) === fechaFiltro)
+  }, [ventas, fechaFiltro])
+
   const resumen = useMemo(
-    () => calcularResumenDia(ventas ?? []),
-    [ventas],
+    () => calcularResumen(ventasFiltradas ?? []),
+    [ventasFiltradas],
   )
+
+  const esHoy = fechaFiltro === fechaHoy
+  const etiquetaPeriodo = esHoy ? 'hoy' : 'en el periodo'
+  const tituloResumen =
+    fechaFiltro == null
+      ? 'Resumen del periodo'
+      : esHoy
+        ? 'Resumen del día'
+        : `Resumen del día · ${formatFecha(parseLocalISODate(fechaFiltro))}`
 
   function mostrarMensaje(tipo, texto) {
     setMensaje({ tipo, texto })
     setTimeout(() => setMensaje(null), 4500)
   }
 
+  async function handleConfirmarDevolucion() {
+    const venta = ventaADevolver
+    if (!venta?.id || devolviendoId != null) return
+
+    setDevolviendoId(venta.id)
+
+    try {
+      await db.transaction('rw', db.productos, db.ventas, async () => {
+        const items = Array.isArray(venta.items) ? venta.items : []
+        const cantidadPorProducto = items.reduce((acc, item) => {
+          const productoId = Number(item.productoId)
+          const cantidad = Number(item.cantidad) || 0
+          if (!productoId || cantidad <= 0) return acc
+          acc[productoId] = (acc[productoId] ?? 0) + cantidad
+          return acc
+        }, {})
+
+        for (const [productoId, cantidad] of Object.entries(cantidadPorProducto)) {
+          const id = Number(productoId)
+          const producto = await db.productos.get(id)
+          if (!producto) continue
+          await db.productos.update(id, {
+            existencia: (producto.existencia ?? 0) + cantidad,
+          })
+        }
+
+        await db.ventas.delete(venta.id)
+      })
+
+      setVentaADevolver(null)
+      mostrarMensaje('exito', 'Devolución procesada y stock actualizado')
+    } catch (error) {
+      mostrarMensaje('error', error.message || 'No se pudo procesar la devolución')
+    } finally {
+      setDevolviendoId(null)
+    }
+  }
+
+  async function handleReimprimir(venta) {
+    if (!venta || reimprimiendoId != null) return
+
+    setReimprimiendoId(venta.id)
+
+    try {
+      const printResult = await printReceipt({
+        id: venta.id,
+        fecha: venta.fecha,
+        total: venta.total,
+        metodoPago: venta.metodoPago,
+        items: venta.items ?? [],
+      })
+
+      if (printResult.success) {
+        mostrarMensaje('exito', 'Ticket enviado a la impresora')
+      } else {
+        mostrarMensaje('error', printResult.error || 'No se pudo reimprimir el ticket')
+      }
+    } catch (error) {
+      mostrarMensaje('error', error.message || 'Error inesperado al reimprimir el ticket')
+    } finally {
+      setReimprimiendoId(null)
+    }
+  }
+
+  async function handleImprimirCorte() {
+    setImprimiendoCorte(true)
+
+    try {
+      if (!isPrinterConnected()) {
+        const connection = await connectPrinter()
+        if (!connection.success) {
+          mostrarMensaje('error', connection.error || 'Impresora no conectada')
+          return
+        }
+      }
+
+      const ahora = new Date()
+      const fechaReporte = fechaFiltro ? parseLocalISODate(fechaFiltro) : ahora
+      const printResult = await sendDailyCloseReceipt({
+        fechaReporte,
+        horaEmision: ahora,
+        fechaCierre: fechaReporte,
+        totalTransacciones: ventasFiltradas?.length ?? 0,
+        totalEfectivo: resumen.efectivoHoy,
+        totalTransferencia: resumen.transferenciaHoy,
+        prendas: resumen.unidadesHoy,
+        totalDia: resumen.totalHoy,
+      })
+
+      if (printResult.success) {
+        mostrarMensaje('exito', 'Corte de caja impreso correctamente')
+      } else {
+        mostrarMensaje('error', printResult.error || 'No se pudo imprimir el corte de caja')
+      }
+    } catch (error) {
+      mostrarMensaje('error', error.message || 'Error inesperado al imprimir el corte de caja')
+    } finally {
+      setImprimiendoCorte(false)
+    }
+  }
+
+  function handleFechaInput(value) {
+    setFechaFiltro(value || null)
+  }
+
   function handleExportExcel() {
-    if (!ventas?.length) {
-      mostrarMensaje('error', 'No hay ventas para exportar')
+    if (!ventasFiltradas?.length) {
+      mostrarMensaje('error', 'No hay ventas para exportar en el periodo seleccionado')
       return
     }
 
     try {
-      exportVentasToExcel(ventas)
+      exportVentasToExcel(ventasFiltradas)
       mostrarMensaje('exito', 'Archivo Excel descargado')
     } catch (error) {
       mostrarMensaje('error', error.message || 'No se pudo generar el archivo Excel')
@@ -112,20 +247,33 @@ export default function ReportesView() {
               Reportes — Corte de Caja
             </h2>
             <p className="text-xs text-carbon/70 dark:text-[#A8A29E] md:text-sm">
-              {ventas ? `${ventas.length} ventas en historial` : 'Cargando…'}
+              {ventas
+                ? `${ventasFiltradas.length} venta(s)${fechaFiltro == null ? ' en historial' : ''}`
+                : 'Cargando…'}
             </p>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleExportExcel}
-          disabled={!ventas?.length}
-          className="btn-primary flex min-h-11 items-center gap-2 px-5 text-sm disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <FileSpreadsheet className="h-4 w-4" />
-          Exportar ventas a Excel
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleImprimirCorte}
+            disabled={imprimiendoCorte}
+            className="btn-primary flex min-h-11 items-center gap-2 px-5 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Printer className="h-4 w-4" />
+            {imprimiendoCorte ? 'Imprimiendo…' : 'Imprimir Corte de Caja'}
+          </button>
+          <button
+            type="button"
+            onClick={handleExportExcel}
+            disabled={!ventasFiltradas?.length}
+            className="btn-primary flex min-h-11 items-center gap-2 px-5 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Exportar ventas a Excel
+          </button>
+        </div>
       </header>
 
       {mensaje && (
@@ -142,9 +290,20 @@ export default function ReportesView() {
       )}
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="shrink-0 p-4 md:p-5">
-          <p className="mb-3 text-sm font-semibold text-carbon/70 dark:text-[#A8A29E]">Resumen del día</p>
-          <DailySummary resumen={resumen} />
+        <div className="shrink-0 space-y-4 p-4 md:p-5">
+          <DateFilterBar
+            fechaFiltro={fechaFiltro}
+            fechaHoy={fechaHoy}
+            fechaAyer={fechaAyer}
+            onFechaChange={handleFechaInput}
+            onHoy={() => setFechaFiltro(fechaHoy)}
+            onAyer={() => setFechaFiltro(fechaAyer)}
+            onVerTodo={() => setFechaFiltro(null)}
+          />
+          <div>
+            <p className="mb-3 text-sm font-semibold text-carbon/70 dark:text-[#A8A29E]">{tituloResumen}</p>
+            <DailySummary resumen={resumen} etiquetaPeriodo={etiquetaPeriodo} />
+          </div>
         </div>
 
         <div>
@@ -152,7 +311,13 @@ export default function ReportesView() {
             <h3 className="text-sm font-semibold text-carbon/70 dark:text-[#A8A29E]">Historial de ventas</h3>
           </div>
           <div className="max-h-[320px] overflow-auto md:max-h-[360px]">
-            <SalesHistoryTable ventas={ventas} />
+            <SalesHistoryTable
+              ventas={ventasFiltradas}
+              onReimprimir={handleReimprimir}
+              reimprimiendoId={reimprimiendoId}
+              onDevolver={setVentaADevolver}
+              devolviendoId={devolviendoId}
+            />
           </div>
         </div>
 
@@ -177,10 +342,24 @@ export default function ReportesView() {
             y un snapshot interno automático.
           </p>
 
-          <SnapshotsPanel onMensaje={mostrarMensaje} />
           <BackupRestorePanel onMensaje={mostrarMensaje} />
+          <SnapshotsPanel onMensaje={mostrarMensaje} />
         </footer>
       </div>
+
+      <ConfirmDialog
+        open={Boolean(ventaADevolver)}
+        title="Confirmar devolución"
+        message="¿Confirmas la devolución de esta venta? El dinero se restará del corte del día y los artículos regresarán al inventario."
+        confirmLabel="Sí, devolver"
+        variant="danger"
+        onConfirm={handleConfirmarDevolucion}
+        onCancel={() => {
+          if (devolviendoId != null) return
+          setVentaADevolver(null)
+        }}
+        processing={devolviendoId != null}
+      />
     </section>
   )
 }

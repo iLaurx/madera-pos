@@ -131,7 +131,7 @@ const QTY_COL = 4
 const DESC_COL = 33
 const PRICE_COL = 11
 const RETURNS_NOTICE =
-  'Cambios y devoluciones únicamente con este ticket dentro de 30 días.'
+  'Cambios y devoluciones únicamente con este ticket dentro de 7 días.'
 
 function bytes(...values) {
   return Uint8Array.from(values)
@@ -281,6 +281,69 @@ function buildReceiptBuffer(saleData) {
     bytes(0x1b, 0x64, 0x05),
     bytes(0x1d, 0x56, 0x42, 0x00),
   )
+
+  return mergeByteArrays(parts)
+}
+
+function formatBreakdownLine(label, value) {
+  const labelText = String(label ?? '')
+  const valueText = String(value ?? '')
+  const space = RECEIPT_WIDTH - labelText.length - valueText.length
+  if (space >= 1) return labelText + ' '.repeat(space) + valueText
+  const trimmedLabel = labelText.slice(0, Math.max(0, RECEIPT_WIDTH - valueText.length - 1))
+  return `${trimmedLabel} ${valueText}`.slice(0, RECEIPT_WIDTH)
+}
+
+function buildDailyCloseReceiptBuffer(closeData) {
+  const fechaReporte = closeData?.fechaReporte ?? new Date()
+  const horaEmision = closeData?.horaEmision ?? new Date()
+  const fechaCierre = closeData?.fechaCierre ?? horaEmision
+  const totalTransacciones = Number(closeData?.totalTransacciones) || 0
+  const totalEfectivo = Number(closeData?.totalEfectivo) || 0
+  const totalTransferencia = Number(closeData?.totalTransferencia) || 0
+  const prendas = Number(closeData?.prendas ?? closeData?.articulos) || 0
+  const totalDia = Number(closeData?.totalDia ?? closeData?.granTotal) || 0
+
+  const parts = [
+    bytes(0x1b, 0x40),
+    bytes(0x1b, 0x74, 0x02),
+
+    bytes(0x1b, 0x61, 0x01),
+    bytes(0x1d, 0x21, 0x11),
+    textLine('MADERA BOUTIQUE'),
+    bytes(0x1d, 0x21, 0x00),
+    textLine('CORTE DE CAJA (RESUMEN DIARIO)'),
+    bytes(0x0a),
+
+    bytes(0x1b, 0x61, 0x00),
+    textLine(`Fecha del reporte: ${formatFecha(fechaReporte)}`),
+    textLine(`Hora de emision:   ${formatHora(horaEmision)}`),
+    textLine(`Total transacciones: ${totalTransacciones}`),
+    bytes(0x0a),
+    dashedSeparator(),
+
+    textLine(formatBreakdownLine('Total Efectivo:', formatTicketMoney(totalEfectivo))),
+    textLine(formatBreakdownLine('Total Transferencia:', formatTicketMoney(totalTransferencia))),
+    textLine(formatBreakdownLine('Prendas/Articulos:', `${prendas} pzs`)),
+    dashedSeparator(),
+
+    bytes(0x1b, 0x61, 0x02),
+    bytes(0x1b, 0x45, 0x01),
+    bytes(0x1d, 0x21, 0x10),
+    textLine(`TOTAL DEL DIA: ${formatTicketMoney(totalDia)}`),
+    bytes(0x1d, 0x21, 0x00),
+    bytes(0x1b, 0x45, 0x00),
+    bytes(0x1b, 0x61, 0x00),
+    dashedSeparator(),
+
+    bytes(0x1b, 0x61, 0x01),
+    textLine('Firma Encargada: _______________'),
+    textLine(`${formatFecha(fechaCierre)} ${formatHora(fechaCierre)}`),
+    bytes(0x1b, 0x61, 0x00),
+
+    bytes(0x1b, 0x64, 0x05),
+    bytes(0x1d, 0x56, 0x42, 0x00),
+  ]
 
   return mergeByteArrays(parts)
 }
@@ -488,6 +551,24 @@ async function sendToPrinter(buffer, logLabel) {
  */
 export async function printReceipt(saleData) {
   return sendToPrinter(buildReceiptBuffer(saleData), 'printReceipt')
+}
+
+/**
+ * Genera el buffer ESC/POS del ticket de corte de caja / reporte diario (80 mm, 48 cols).
+ * @param {object} closeData
+ * @returns {Uint8Array}
+ */
+export function printDailyCloseReceipt(closeData) {
+  return buildDailyCloseReceiptBuffer(closeData)
+}
+
+/**
+ * Imprime el corte de caja en la impresora Bluetooth conectada.
+ * @param {object} closeData
+ * @returns {Promise<{ success: boolean, error?: string }>}
+ */
+export async function sendDailyCloseReceipt(closeData) {
+  return sendToPrinter(buildDailyCloseReceiptBuffer(closeData), 'sendDailyCloseReceipt')
 }
 
 /**

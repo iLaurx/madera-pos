@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Package, Plus, Trash2, FileSpreadsheet } from 'lucide-react'
+import { Package, Plus, FileSpreadsheet } from 'lucide-react'
 import ProductFilters from '../components/caja/ProductFilters'
 import BulkImport from '../components/inventario/BulkImport'
 import ConfirmDialog from '../components/inventario/ConfirmDialog'
@@ -26,7 +26,6 @@ export default function InventarioView() {
   const [busqueda, setBusqueda] = useState('')
   const [manualOpen, setManualOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
-  const [vaciarOpen, setVaciarOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [processing, setProcessing] = useState(false)
   const [mensaje, setMensaje] = useState(null)
@@ -141,19 +140,6 @@ export default function InventarioView() {
     }
   }, [deleteTarget])
 
-  const handleVaciarInventario = useCallback(async () => {
-    setProcessing(true)
-    try {
-      await db.productos.clear()
-      setVaciarOpen(false)
-      mostrarMensaje('exito', 'Inventario vaciado correctamente')
-    } catch {
-      mostrarMensaje('error', 'No se pudo vaciar el inventario')
-    } finally {
-      setProcessing(false)
-    }
-  }, [])
-
   const handleExportExcel = useCallback(() => {
     if (!productos?.length) {
       mostrarMensaje('error', 'No hay productos para exportar')
@@ -205,15 +191,6 @@ export default function InventarioView() {
           >
             <Plus className="h-4 w-4" />
             Alta manual
-          </button>
-          <button
-            type="button"
-            onClick={() => setVaciarOpen(true)}
-            disabled={!productos?.length}
-            className="flex min-h-11 items-center gap-2 rounded-full border-0 bg-red-50 px-5 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-100 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Trash2 className="h-4 w-4" />
-            Vaciar inventario
           </button>
         </div>
       </header>
@@ -267,16 +244,6 @@ export default function InventarioView() {
         processing={processing}
         onClose={cerrarModalProducto}
         onSave={handleManualSave}
-      />
-
-      <ConfirmDialog
-        open={vaciarOpen}
-        title="Vaciar inventario"
-        message="Se eliminarán todos los productos del catálogo. Esta acción no se puede deshacer."
-        confirmLabel="Sí, vaciar todo"
-        onConfirm={handleVaciarInventario}
-        onCancel={() => setVaciarOpen(false)}
-        processing={processing}
       />
 
       <ConfirmDialog

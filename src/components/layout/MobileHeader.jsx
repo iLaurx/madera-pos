@@ -1,5 +1,4 @@
 import { Menu } from 'lucide-react'
-import ThemeToggle from './ThemeToggle'
 
 export default function MobileHeader({ onOpenMenu }) {
   return (
@@ -17,7 +16,7 @@ export default function MobileHeader({ onOpenMenu }) {
         Madera Boutique
       </span>
 
-      <ThemeToggle compact />
+      <div className="h-11 w-11 shrink-0" aria-hidden="true" />
     </header>
   )
 }

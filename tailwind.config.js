@@ -9,7 +9,7 @@ export default {
       },
       colors: {
         /* Tokens del tema claro (el tema oscuro usa valores explícitos con dark:) */
-        cream: '#D0A890',
+        cream: '#FAF7F2',
         wood: '#FBBE93',
         carbon: '#261A12',
         brand: {

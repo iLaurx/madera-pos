@@ -1,6 +1,6 @@
 import { ShoppingCart, Package, BarChart3, X } from 'lucide-react'
 import { cn } from '../../lib/utils'
-import ThemeToggle from './ThemeToggle'
+import SettingsMenu from './SettingsMenu'
 
 const NAV_ITEMS = [
   { id: 'caja', label: 'Caja', icon: ShoppingCart },
@@ -59,8 +59,8 @@ export default function Sidebar({ activeView, onNavigate, isMenuOpen, onClose })
         })}
       </nav>
 
-      <div className="hidden shrink-0 border-t border-[#3D2B20]/15 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] dark:border-[#E5E5E5]/10 md:block">
-        <ThemeToggle />
+      <div className="shrink-0 border-t border-[#3D2B20]/15 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] dark:border-[#E5E5E5]/10">
+        <SettingsMenu />
       </div>
     </aside>
   )
