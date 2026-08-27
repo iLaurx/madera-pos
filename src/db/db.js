@@ -75,4 +75,11 @@ db.version(7).stores({
   snapshots: '++id, fecha',
 })
 
+db.version(8).stores({
+  productos: '++id, departamento, categoria, marca, descripcion, talla, precio, existencia',
+  ventas: '++id, fecha, total, metodoPago, creditoId, items',
+  snapshots: '++id, fecha',
+  creditos: '++id, clienteNombre, telefono, limiteCredito, saldoActual, fechaCreacion',
+})
+
 export default db

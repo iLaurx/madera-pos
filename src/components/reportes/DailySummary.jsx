@@ -1,4 +1,4 @@
-import { Banknote, Package, Smartphone, TrendingUp } from 'lucide-react'
+import { Banknote, Package, Smartphone, TrendingUp, WalletCards } from 'lucide-react'
 import { formatCurrency } from '../../lib/format'
 import { cn } from '../../lib/utils'
 
@@ -8,6 +8,7 @@ function SummaryCard({ label, value, icon: Icon, accent = 'brand' }) {
     emerald: 'bg-[#B3542D]/15 text-carbon dark:bg-[#292524] dark:text-[#A8A29E]',
     violet: 'bg-brand-50 text-brand-800 dark:bg-[#24211F] dark:text-[#8C4A32]',
     amber: 'bg-[#B3542D]/20 text-carbon dark:bg-[#292524] dark:text-[#A8A29E]',
+    wood: 'bg-[#B3542D]/15 text-[#B3542D] dark:bg-[#8C4A32]/25 dark:text-[#E5E5E5]',
   }
 
   return (
@@ -25,7 +26,7 @@ function SummaryCard({ label, value, icon: Icon, accent = 'brand' }) {
 
 export default function DailySummary({ resumen, etiquetaPeriodo = 'hoy' }) {
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
       <SummaryCard
         label={`Total vendido ${etiquetaPeriodo}`}
         value={formatCurrency(resumen.totalHoy)}
@@ -49,6 +50,12 @@ export default function DailySummary({ resumen, etiquetaPeriodo = 'hoy' }) {
         value={formatCurrency(resumen.transferenciaHoy)}
         icon={Smartphone}
         accent="violet"
+      />
+      <SummaryCard
+        label={`Crédito ${etiquetaPeriodo}`}
+        value={formatCurrency(resumen.creditoHoy ?? 0)}
+        icon={WalletCards}
+        accent="wood"
       />
     </div>
   )

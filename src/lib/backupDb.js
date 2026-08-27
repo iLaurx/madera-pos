@@ -4,7 +4,7 @@ import { normalizarCategoria, normalizarDepartamento, migrarTaxonomiaProducto } 
 import { db } from '../db/db'
 
 export const BACKUP_APP = 'MaderaBoutique'
-export const BACKUP_VERSION = 1
+export const BACKUP_VERSION = 2
 
 function readFileAsUtf8Text(file) {
   return new Promise((resolve, reject) => {
@@ -16,15 +16,16 @@ function readFileAsUtf8Text(file) {
 }
 
 export async function obtenerDatosRespaldo() {
-  const [productos, ventas] = await Promise.all([
+  const [productos, ventas, creditos] = await Promise.all([
     db.productos.toArray(),
     db.ventas.toArray(),
+    db.creditos.toArray(),
   ])
 
-  return { productos, ventas }
+  return { productos, ventas, creditos }
 }
 
-export function crearObjetoRespaldo({ productos, ventas }) {
+export function crearObjetoRespaldo({ productos, ventas, creditos = [] }) {
   const ahora = new Date()
 
   return {
@@ -36,10 +37,12 @@ export function crearObjetoRespaldo({ productos, ventas }) {
       hora: formatHora(ahora),
       totalProductos: productos.length,
       totalVentas: ventas.length,
+      totalCreditos: creditos.length,
     },
-    tablas: ['productos', 'ventas'],
+    tablas: ['productos', 'ventas', 'creditos'],
     productos,
     ventas,
+    creditos,
   }
 }
 
@@ -63,6 +66,7 @@ export function validarRespaldo(data) {
   return {
     productos: data.productos.length,
     ventas: data.ventas.length,
+    creditos: Array.isArray(data.creditos) ? data.creditos.length : 0,
     exportedAt: data.exportedAt ?? data.metadata?.fecha ?? 'desconocida',
   }
 }
@@ -107,6 +111,30 @@ function normalizarVentas(ventas) {
     ...venta,
     fecha: venta.fecha ? new Date(venta.fecha) : new Date(),
     items: Array.isArray(venta.items) ? venta.items : [],
+    ...(venta.creditoId != null ? { creditoId: venta.creditoId } : {}),
+    ...(venta.clienteNombre ? { clienteNombre: venta.clienteNombre } : {}),
+  }))
+}
+
+function normalizarMovimientos(movimientos) {
+  if (!Array.isArray(movimientos)) return []
+
+  return movimientos.map((movimiento) => ({
+    ...movimiento,
+    fecha: movimiento.fecha ? new Date(movimiento.fecha) : new Date(),
+    monto: Number(movimiento.monto) || 0,
+  }))
+}
+
+function normalizarCreditos(creditos) {
+  return (creditos ?? []).map((credito) => ({
+    clienteNombre: String(credito.clienteNombre ?? '').trim(),
+    telefono: String(credito.telefono ?? '').trim(),
+    limiteCredito: Number(credito.limiteCredito) || 0,
+    saldoActual: Number(credito.saldoActual) || 0,
+    fechaCreacion: credito.fechaCreacion ? new Date(credito.fechaCreacion) : new Date(),
+    historialMovimientos: normalizarMovimientos(credito.historialMovimientos),
+    ...(credito.id != null ? { id: credito.id } : {}),
   }))
 }
 
@@ -137,13 +165,19 @@ function normalizarProductos(productos) {
   })
 }
 
-export async function restaurarTablasDesdeDatos({ productos: productosRaw, ventas: ventasRaw }) {
+export async function restaurarTablasDesdeDatos({
+  productos: productosRaw,
+  ventas: ventasRaw,
+  creditos: creditosRaw,
+}) {
   const productos = normalizarProductos(productosRaw ?? [])
   const ventas = normalizarVentas(ventasRaw ?? [])
+  const creditos = normalizarCreditos(creditosRaw ?? [])
 
-  await db.transaction('rw', db.productos, db.ventas, async () => {
+  await db.transaction('rw', db.productos, db.ventas, db.creditos, async () => {
     await db.productos.clear()
     await db.ventas.clear()
+    await db.creditos.clear()
 
     if (productos.length > 0) {
       await db.productos.bulkAdd(productos)
@@ -152,11 +186,16 @@ export async function restaurarTablasDesdeDatos({ productos: productosRaw, venta
     if (ventas.length > 0) {
       await db.ventas.bulkAdd(ventas)
     }
+
+    if (creditos.length > 0) {
+      await db.creditos.bulkAdd(creditos)
+    }
   })
 
   return {
     productos: productos.length,
     ventas: ventas.length,
+    creditos: creditos.length,
   }
 }
 

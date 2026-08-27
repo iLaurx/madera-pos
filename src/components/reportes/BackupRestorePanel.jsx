@@ -20,7 +20,7 @@ export default function BackupRestorePanel({ onMensaje }) {
       const metadata = await exportarRespaldoJSON()
       onMensaje(
         'exito',
-        `Respaldo descargado (${metadata.totalProductos} productos, ${metadata.totalVentas} ventas)`,
+        `Respaldo descargado (${metadata.totalProductos} productos, ${metadata.totalVentas} ventas, ${metadata.totalCreditos ?? 0} créditos)`,
       )
     } catch (error) {
       onMensaje('error', error.message || 'No se pudo generar el respaldo')
@@ -52,7 +52,7 @@ export default function BackupRestorePanel({ onMensaje }) {
       setRespaldoPendiente(null)
       onMensaje(
         'exito',
-        `Base de datos restaurada (${resultado.productos} productos, ${resultado.ventas} ventas)`,
+        `Base de datos restaurada (${resultado.productos} productos, ${resultado.ventas} ventas, ${resultado.creditos ?? 0} créditos)`,
       )
     } catch (error) {
       onMensaje('error', error.message || 'No se pudo restaurar la base de datos')
@@ -70,8 +70,8 @@ export default function BackupRestorePanel({ onMensaje }) {
         </div>
 
         <p className="mb-4 text-sm text-carbon/60 dark:text-[#A8A29E]">
-          Exporta o restaura productos e historial de ventas. Los respaldos son archivos JSON
-          locales.
+          Exporta o restaura productos, historial de ventas y cuentas a crédito. Los respaldos son
+          archivos JSON locales.
         </p>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -120,7 +120,7 @@ export default function BackupRestorePanel({ onMensaje }) {
         title="Restaurar base de datos"
         message={
           respaldoPendiente
-            ? `Se reemplazarán todos los datos actuales con el respaldo "${respaldoPendiente.nombreArchivo}" (${respaldoPendiente.resumen.productos} productos, ${respaldoPendiente.resumen.ventas} ventas). Esta acción no se puede deshacer.`
+            ? `Se reemplazarán todos los datos actuales con el respaldo "${respaldoPendiente.nombreArchivo}" (${respaldoPendiente.resumen.productos} productos, ${respaldoPendiente.resumen.ventas} ventas, ${respaldoPendiente.resumen.creditos ?? 0} créditos). Esta acción no se puede deshacer.`
             : ''
         }
         confirmLabel="Sí, restaurar"

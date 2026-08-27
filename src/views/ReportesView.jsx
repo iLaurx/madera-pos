@@ -8,6 +8,7 @@ import DateFilterBar from '../components/reportes/DateFilterBar'
 import SalesHistoryTable from '../components/reportes/SalesHistoryTable'
 import SnapshotsPanel from '../components/reportes/SnapshotsPanel'
 import { exportarRespaldoJSON } from '../lib/backupDb'
+import { revertirCargoPorVenta } from '../lib/creditos'
 import {
   addCalendarDays,
   formatFecha,
@@ -36,11 +37,13 @@ function calcularResumen(ventas) {
         acc.efectivoHoy += venta.total ?? 0
       } else if (venta.metodoPago === 'transferencia') {
         acc.transferenciaHoy += venta.total ?? 0
+      } else if (venta.metodoPago === 'credito') {
+        acc.creditoHoy += venta.total ?? 0
       }
 
       return acc
     },
-    { totalHoy: 0, unidadesHoy: 0, efectivoHoy: 0, transferenciaHoy: 0 },
+    { totalHoy: 0, unidadesHoy: 0, efectivoHoy: 0, transferenciaHoy: 0, creditoHoy: 0 },
   )
 }
 
@@ -94,7 +97,7 @@ export default function ReportesView() {
     setDevolviendoId(venta.id)
 
     try {
-      await db.transaction('rw', db.productos, db.ventas, async () => {
+      await db.transaction('rw', db.productos, db.ventas, db.creditos, async () => {
         const items = Array.isArray(venta.items) ? venta.items : []
         const cantidadPorProducto = items.reduce((acc, item) => {
           const productoId = Number(item.productoId)
@@ -110,6 +113,15 @@ export default function ReportesView() {
           if (!producto) continue
           await db.productos.update(id, {
             existencia: (producto.existencia ?? 0) + cantidad,
+          })
+        }
+
+        if (venta.metodoPago === 'credito' && venta.creditoId != null) {
+          await revertirCargoPorVenta({
+            creditoId: venta.creditoId,
+            ventaId: venta.id,
+            monto: venta.total,
+            fecha: new Date(),
           })
         }
 
@@ -137,6 +149,7 @@ export default function ReportesView() {
         total: venta.total,
         metodoPago: venta.metodoPago,
         items: venta.items ?? [],
+        ...(venta.clienteNombre ? { clienteNombre: venta.clienteNombre } : {}),
       })
 
       if (printResult.success) {
@@ -172,6 +185,7 @@ export default function ReportesView() {
         totalTransacciones: ventasFiltradas?.length ?? 0,
         totalEfectivo: resumen.efectivoHoy,
         totalTransferencia: resumen.transferenciaHoy,
+        totalCredito: resumen.creditoHoy,
         prendas: resumen.unidadesHoy,
         totalDia: resumen.totalHoy,
       })
@@ -350,7 +364,7 @@ export default function ReportesView() {
       <ConfirmDialog
         open={Boolean(ventaADevolver)}
         title="Confirmar devolución"
-        message="¿Confirmas la devolución de esta venta? El dinero se restará del corte del día y los artículos regresarán al inventario."
+        message="¿Confirmas la devolución de esta venta? El dinero se restará del corte del día, los artículos regresarán al inventario y, si fue a crédito, se descontará del saldo del cliente."
         confirmLabel="Sí, devolver"
         variant="danger"
         onConfirm={handleConfirmarDevolucion}

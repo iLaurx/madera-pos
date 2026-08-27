@@ -72,11 +72,18 @@ export default function SalesHistoryTable({
                     'inline-flex rounded-full px-3 py-1 text-xs font-semibold',
                     venta.metodoPago === 'efectivo'
                       ? 'bg-[#B3542D]/15 text-carbon dark:bg-[#8C4A32]/25 dark:text-[#E5E5E5]'
-                      : 'bg-[#EDE4DA] text-carbon dark:bg-[#292524] dark:text-[#A8A29E]',
+                      : venta.metodoPago === 'credito'
+                        ? 'bg-amber-100 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200'
+                        : 'bg-[#EDE4DA] text-carbon dark:bg-[#292524] dark:text-[#A8A29E]',
                   )}
                 >
                   {formatMetodoPago(venta.metodoPago)}
                 </span>
+                {venta.clienteNombre ? (
+                  <p className="mt-1 max-w-[10rem] truncate text-xs text-carbon/50 dark:text-[#A8A29E]/80">
+                    {venta.clienteNombre}
+                  </p>
+                ) : null}
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-right text-base font-bold text-[#B3542D] dark:text-[#E5E5E5]">
                 {formatCurrency(venta.total)}

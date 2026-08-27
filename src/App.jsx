@@ -2,12 +2,14 @@ import { useState } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
 import AppLayout from './components/layout/AppLayout'
 import CajaView from './views/CajaView'
+import CreditosView from './views/CreditosView'
 import InventarioView from './views/InventarioView'
 import ReportesView from './views/ReportesView'
 
 const VIEWS = {
   caja: CajaView,
   inventario: InventarioView,
+  creditos: CreditosView,
   reportes: ReportesView,
 }
 

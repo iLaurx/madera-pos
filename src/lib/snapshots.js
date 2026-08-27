@@ -24,6 +24,7 @@ export async function crearSnapshot() {
     fecha,
     totalProductos: datos.productos.length,
     totalVentas: datos.ventas.length,
+    totalCreditos: datos.creditos?.length ?? 0,
     datos,
   }
 
@@ -35,16 +36,18 @@ export async function crearSnapshot() {
     fecha,
     totalProductos: registro.totalProductos,
     totalVentas: registro.totalVentas,
+    totalCreditos: registro.totalCreditos,
   }
 }
 
 export async function listarSnapshots() {
   const lista = await db.snapshots.orderBy('fecha').reverse().toArray()
-  return lista.map(({ id, fecha, totalProductos, totalVentas }) => ({
+  return lista.map(({ id, fecha, totalProductos, totalVentas, totalCreditos }) => ({
     id,
     fecha,
     totalProductos: totalProductos ?? 0,
     totalVentas: totalVentas ?? 0,
+    totalCreditos: totalCreditos ?? 0,
   }))
 }
 

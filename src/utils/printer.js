@@ -150,6 +150,7 @@ function formatPaymentMethod(saleData) {
   const key = String(raw).trim().toLowerCase()
   if (key === 'efectivo') return 'Efectivo'
   if (key === 'transferencia') return 'Transferencia'
+  if (key === 'credito') return 'A Credito / Fiado'
   return String(raw).trim() || 'Efectivo'
 }
 
@@ -262,6 +263,9 @@ function buildReceiptBuffer(saleData) {
     bytes(0x1b, 0x45, 0x00),
     bytes(0x1b, 0x61, 0x00),
     textLine(`Forma de Pago: ${formatPaymentMethod(saleData)}`),
+    ...(saleData?.clienteNombre
+      ? [textLine(`Cliente: ${String(saleData.clienteNombre).trim()}`)]
+      : []),
     dashedSeparator(),
 
     bytes(0x1b, 0x61, 0x01),
@@ -301,6 +305,7 @@ function buildDailyCloseReceiptBuffer(closeData) {
   const totalTransacciones = Number(closeData?.totalTransacciones) || 0
   const totalEfectivo = Number(closeData?.totalEfectivo) || 0
   const totalTransferencia = Number(closeData?.totalTransferencia) || 0
+  const totalCredito = Number(closeData?.totalCredito) || 0
   const prendas = Number(closeData?.prendas ?? closeData?.articulos) || 0
   const totalDia = Number(closeData?.totalDia ?? closeData?.granTotal) || 0
 
@@ -324,6 +329,7 @@ function buildDailyCloseReceiptBuffer(closeData) {
 
     textLine(formatBreakdownLine('Total Efectivo:', formatTicketMoney(totalEfectivo))),
     textLine(formatBreakdownLine('Total Transferencia:', formatTicketMoney(totalTransferencia))),
+    textLine(formatBreakdownLine('Total Credito:', formatTicketMoney(totalCredito))),
     textLine(formatBreakdownLine('Prendas/Articulos:', `${prendas} pzs`)),
     dashedSeparator(),
 

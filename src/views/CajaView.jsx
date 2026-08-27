@@ -19,6 +19,7 @@ import {
   marcaSigueDisponible,
   ordenarStockPrimero,
 } from '../lib/productos'
+import { registrarCargoCredito } from '../lib/creditos'
 import { safeVibrate } from '../lib/safeWeb'
 import { printReceipt, connectPrinter } from '../utils/printer'
 
@@ -180,8 +181,14 @@ export default function CajaView() {
   }, [])
 
   const confirmarCobro = useCallback(
-    async ({ metodoPago }) => {
+    async ({ metodoPago, creditoId, clienteNombre }) => {
       if (carrito.length === 0 || processing) return
+
+      if (metodoPago === 'credito' && creditoId == null) {
+        setMensaje({ tipo: 'error', texto: 'Selecciona un cliente para vender a crédito' })
+        setTimeout(() => setMensaje(null), 3000)
+        return
+      }
 
       setProcessing(true)
       setMensaje(null)
@@ -209,7 +216,7 @@ export default function CajaView() {
           }
         }
 
-        const ventaId = await db.transaction('rw', db.ventas, db.productos, async () => {
+        const ventaId = await db.transaction('rw', db.ventas, db.productos, db.creditos, async () => {
           const cantidadPorProducto = carrito.reduce((acc, item) => {
             acc[item.productoId] = (acc[item.productoId] ?? 0) + item.cantidad
             return acc
@@ -230,7 +237,20 @@ export default function CajaView() {
             total,
             metodoPago,
             items: itemsVenta,
+            ...(metodoPago === 'credito'
+              ? { creditoId, clienteNombre: clienteNombre ?? '' }
+              : {}),
           })
+
+          if (metodoPago === 'credito') {
+            await registrarCargoCredito({
+              creditoId,
+              monto: total,
+              fecha: fechaVenta,
+              ventaId: id,
+              descripcion: `Venta #${id}`,
+            })
+          }
 
           for (const [productoId, cantidad] of Object.entries(cantidadPorProducto)) {
             const producto = await db.productos.get(Number(productoId))
@@ -251,6 +271,7 @@ export default function CajaView() {
               total,
               metodoPago,
               items: itemsVenta,
+              ...(metodoPago === 'credito' ? { clienteNombre } : {}),
             })
           } catch (printError) {
             console.error('printReceipt:', printError)
@@ -264,7 +285,9 @@ export default function CajaView() {
         setCarrito([])
         setCheckoutOpen(false)
 
-        let texto = 'Venta registrada correctamente'
+        let texto = metodoPago === 'credito'
+          ? `Venta a crédito registrada${clienteNombre ? ` (${clienteNombre})` : ''}`
+          : 'Venta registrada correctamente'
         if (printResult.success) {
           texto = 'Venta registrada e ticket impreso'
         } else if (printResult.error !== 'No se seleccionó ninguna impresora') {

@@ -6,6 +6,7 @@ import { etiquetaProducto } from './productos'
 function formatMetodoPago(metodo) {
   if (metodo === 'efectivo') return 'Efectivo'
   if (metodo === 'transferencia') return 'Transferencia'
+  if (metodo === 'credito') return 'A crédito / Fiado'
   return metodo ?? ''
 }
 
@@ -39,6 +40,7 @@ export function exportVentasToExcel(ventas, options = {}) {
     Fecha: formatFecha(venta.fecha),
     Hora: formatHora(venta.fecha),
     'Método de pago': formatMetodoPago(venta.metodoPago),
+    Cliente: venta.clienteNombre || '',
     'Artículos vendidos': contarUnidades(venta.items),
     Items: formatItems(venta.items),
     Total: venta.total ?? 0,
@@ -52,7 +54,8 @@ export function exportVentasToExcel(ventas, options = {}) {
     { wch: 6 },
     { wch: 14 },
     { wch: 10 },
-    { wch: 16 },
+    { wch: 18 },
+    { wch: 22 },
     { wch: 18 },
     { wch: 50 },
     { wch: 12 },

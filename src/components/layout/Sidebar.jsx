@@ -1,10 +1,11 @@
-import { ShoppingCart, Package, BarChart3, X } from 'lucide-react'
+import { ShoppingCart, Package, WalletCards, BarChart3, X } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import SettingsMenu from './SettingsMenu'
 
 const NAV_ITEMS = [
   { id: 'caja', label: 'Caja', icon: ShoppingCart },
   { id: 'inventario', label: 'Inventario', icon: Package },
+  { id: 'creditos', label: 'Créditos', icon: WalletCards },
   { id: 'reportes', label: 'Reportes', icon: BarChart3 },
 ]
 
