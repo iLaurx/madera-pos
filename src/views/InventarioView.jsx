@@ -57,6 +57,11 @@ export default function InventarioView() {
     [productos, departamento, categoriaActiva, marcaActiva, busqueda],
   )
 
+  const totalUnidades = useMemo(
+    () => (productos ?? []).reduce((total, producto) => total + (Number(producto.existencia) || 0), 0),
+    [productos],
+  )
+
   function mostrarMensaje(tipo, texto) {
     setMensaje({ tipo, texto })
     setTimeout(() => setMensaje(null), 3500)
@@ -165,7 +170,14 @@ export default function InventarioView() {
             <h2 className="text-lg font-semibold text-carbon dark:text-[#E5E5E5] md:text-xl">Inventario</h2>
             <p className="text-xs text-carbon/70 dark:text-[#A8A29E] md:text-sm">
               {productos
-                ? `${productosFiltrados.length} de ${productos.length} productos`
+                ? (
+                  <>
+                    {productosFiltrados.length} de {productos.length} productos
+                    <span className="block">
+                      Stock total de la tienda: {totalUnidades} {totalUnidades === 1 ? 'unidad' : 'unidades'}
+                    </span>
+                  </>
+                )
                 : 'Cargando…'}
             </p>
           </div>
