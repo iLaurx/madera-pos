@@ -426,6 +426,9 @@ function mapBluetoothError(error) {
   if (error?.name === 'NotFoundError') {
     return 'No se seleccionó ninguna impresora'
   }
+  if (error?.name === 'NotAllowedError') {
+    return 'No se autorizó la conexión con la impresora'
+  }
   if (error?.name === 'SecurityError') {
     return 'Bluetooth no disponible en este contexto (requiere HTTPS)'
   }
@@ -528,7 +531,7 @@ async function ensureConnected() {
 /**
  * Conecta (o reutiliza) la impresora Bluetooth de la sesión actual.
  * Solo abre el selector de dispositivos la primera vez.
- * @returns {Promise<{ success: boolean, error?: string }>}
+ * @returns {Promise<{ success: boolean, cancelled?: boolean, error?: string }>}
  */
 export async function connectPrinter() {
   transparentReconnects = 0
@@ -539,8 +542,9 @@ export async function connectPrinter() {
     }
     return { success: true }
   } catch (error) {
-    console.error('connectPrinter:', error)
-    return { success: false, error: mapBluetoothError(error) }
+    const cancelled = ['NotFoundError', 'NotAllowedError'].includes(error?.name)
+    if (!cancelled) console.error('connectPrinter:', error)
+    return { success: false, cancelled, error: mapBluetoothError(error) }
   }
 }
 

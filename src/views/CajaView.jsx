@@ -198,16 +198,19 @@ export default function CajaView() {
           subtotal: item.precio * item.cantidad,
         }))
 
-        let printerSession = { success: false }
-        try {
-          printerSession = await connectPrinter()
-        } catch (printerError) {
-          console.error('connectPrinter:', printerError)
-          printerSession = {
-            success: false,
-            error: printerError?.message || 'No se pudo conectar la impresora',
+        // Abre el selector desde el clic, pero no condiciona el guardado a Bluetooth.
+        const printerConnection = (async () => {
+          try {
+            return await connectPrinter()
+          } catch (printerError) {
+            console.error('connectPrinter:', printerError)
+            return {
+              success: false,
+              cancelled: ['NotFoundError', 'NotAllowedError'].includes(printerError?.name),
+              error: printerError?.message || 'No se pudo conectar la impresora',
+            }
           }
-        }
+        })()
 
         const ventaId = await db.transaction('rw', db.ventas, db.productos, async () => {
           const cantidadPorProducto = carrito.reduce((acc, item) => {
@@ -242,6 +245,13 @@ export default function CajaView() {
           return id
         })
 
+        // La transacción ya confirmó la venta; cierra el cobro antes de imprimir.
+        setCarrito([])
+        setCheckoutOpen(false)
+        setCartMobileOpen(false)
+        setMensaje({ tipo: 'exito', texto: 'Venta registrada correctamente' })
+
+        const printerSession = await printerConnection
         let printResult = printerSession
         if (printerSession.success) {
           try {
@@ -261,14 +271,11 @@ export default function CajaView() {
           }
         }
 
-        setCarrito([])
-        setCheckoutOpen(false)
-
         let texto = 'Venta registrada correctamente'
         if (printResult.success) {
-          texto = 'Venta registrada e ticket impreso'
-        } else if (printResult.error !== 'No se seleccionó ninguna impresora') {
-          texto = `Venta registrada. No se imprimió: ${printResult.error}`
+          texto = 'Venta registrada y ticket impreso'
+        } else if (!printResult.cancelled) {
+          texto = `Venta registrada. No se imprimió: ${printResult.error || 'Impresora no disponible'}`
         }
 
         setMensaje({ tipo: 'exito', texto })
