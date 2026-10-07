@@ -11,9 +11,12 @@ const NAV_ITEMS = [
 export default function Sidebar({ activeView, onNavigate, isMenuOpen, onClose }) {
   return (
     <aside
+      id="navigation-sidebar"
+      aria-label="Menú principal"
+      aria-hidden={!isMenuOpen}
+      inert={!isMenuOpen}
       className={cn(
         'wood-texture fixed inset-y-0 left-0 z-50 flex h-dvh max-h-dvh w-64 flex-col shadow-md transition-transform duration-300 ease-out',
-        'md:static md:z-auto md:translate-x-0 md:transition-none',
         isMenuOpen ? 'translate-x-0' : '-translate-x-full',
       )}
     >
@@ -30,7 +33,7 @@ export default function Sidebar({ activeView, onNavigate, isMenuOpen, onClose })
           type="button"
           onClick={onClose}
           aria-label="Cerrar menú"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream/80 text-carbon shadow-sm hover:bg-cream active:scale-95 dark:bg-[#292524]/80 dark:text-[#E5E5E5] dark:hover:bg-[#292524] md:hidden"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream/80 text-carbon shadow-sm hover:bg-cream active:scale-95 dark:bg-[#292524]/80 dark:text-[#E5E5E5] dark:hover:bg-[#292524]"
         >
           <X className="h-5 w-5" />
         </button>

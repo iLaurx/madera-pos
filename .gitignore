@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+BD-Botique/
+output/
+outputs/
+tmp/
+.work/

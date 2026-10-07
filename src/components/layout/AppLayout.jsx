@@ -15,7 +15,7 @@ export default function AppLayout({ activeView, onNavigate, children }) {
       {isMenuOpen && (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          className="fixed inset-0 z-40 bg-black/50"
           onClick={() => setIsMenuOpen(false)}
           aria-label="Cerrar menú"
         />
@@ -29,9 +29,9 @@ export default function AppLayout({ activeView, onNavigate, children }) {
       />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <MobileHeader onOpenMenu={() => setIsMenuOpen(true)} />
+        <MobileHeader isMenuOpen={isMenuOpen} onOpenMenu={() => setIsMenuOpen(true)} />
 
-        <main className="flex min-h-0 flex-1 flex-col overflow-hidden pt-[calc(3.5rem+env(safe-area-inset-top,0px))] md:pt-0">
+        <main className="flex min-h-0 flex-1 flex-col overflow-hidden pt-[calc(3.5rem+env(safe-area-inset-top,0px))]">
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 md:p-6">{children}</div>
         </main>
       </div>
