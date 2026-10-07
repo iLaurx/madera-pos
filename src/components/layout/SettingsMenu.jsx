@@ -124,6 +124,10 @@ export default function SettingsMenu() {
               Vaciar inventario
             </button>
           </section>
+
+          <p className="border-t border-[#D8C9BC] px-4 py-3 text-center text-xs text-carbon/55 dark:border-[#3F3A36] dark:text-[#A8A29E]">
+            Versión v1.2
+          </p>
         </div>
       )}
 
