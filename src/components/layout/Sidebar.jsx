@@ -62,7 +62,8 @@ export default function Sidebar({ activeView, onNavigate, isMenuOpen, onClose })
         })}
       </nav>
 
-      <div className="shrink-0 border-t border-[#3D2B20]/15 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] dark:border-[#E5E5E5]/10">
+      {/* Reserva espacio para la barra de la tablet, incluso si no informa un área segura. */}
+      <div className="shrink-0 border-t border-[#3D2B20]/15 p-3 pb-[max(4.5rem,env(safe-area-inset-bottom,0px))] dark:border-[#E5E5E5]/10">
         <SettingsMenu />
       </div>
     </aside>
