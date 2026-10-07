@@ -168,7 +168,9 @@ export default function ReportesView() {
       const printResult = await sendDailyCloseReceipt({
         fechaReporte,
         horaEmision: ahora,
-        fechaCierre: fechaReporte,
+        fechaCierre: ahora,
+        periodo: fechaFiltro == null ? 'historial' : 'dia',
+        ventas: ventasFiltradas ?? [],
         totalTransacciones: ventasFiltradas?.length ?? 0,
         totalEfectivo: resumen.efectivoHoy,
         totalTransferencia: resumen.transferenciaHoy,
@@ -258,7 +260,7 @@ export default function ReportesView() {
           <button
             type="button"
             onClick={handleImprimirCorte}
-            disabled={imprimiendoCorte}
+            disabled={imprimiendoCorte || !ventas}
             className="btn-primary flex min-h-11 items-center gap-2 px-5 text-sm disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Printer className="h-4 w-4" />

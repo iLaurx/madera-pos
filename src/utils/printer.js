@@ -303,6 +303,11 @@ function buildDailyCloseReceiptBuffer(closeData) {
   const totalTransferencia = Number(closeData?.totalTransferencia) || 0
   const prendas = Number(closeData?.prendas ?? closeData?.articulos) || 0
   const totalDia = Number(closeData?.totalDia ?? closeData?.granTotal) || 0
+  const esHistorial = closeData?.periodo === 'historial'
+  const ventas = Array.isArray(closeData?.ventas) ? [...closeData.ventas] : []
+  ventas.sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
+  const tableHeader =
+    padRight('CANT', QTY_COL) + padRight(' DESCRIPCION', DESC_COL) + padLeft('IMPORTE', PRICE_COL)
 
   const parts = [
     bytes(0x1b, 0x40),
@@ -312,16 +317,52 @@ function buildDailyCloseReceiptBuffer(closeData) {
     bytes(0x1d, 0x21, 0x11),
     textLine('MADERA BOUTIQUE'),
     bytes(0x1d, 0x21, 0x00),
-    textLine('CORTE DE CAJA (RESUMEN DIARIO)'),
+    textLine(esHistorial ? 'CORTE DE CAJA (HISTORIAL)' : 'CORTE DE CAJA (RESUMEN DIARIO)'),
     bytes(0x0a),
 
     bytes(0x1b, 0x61, 0x00),
-    textLine(`Fecha del reporte: ${formatFecha(fechaReporte)}`),
+    textLine(esHistorial ? 'Periodo: Todo el historial' : `Fecha del reporte: ${formatFecha(fechaReporte)}`),
     textLine(`Hora de emision:   ${formatHora(horaEmision)}`),
     textLine(`Total transacciones: ${totalTransacciones}`),
     bytes(0x0a),
     dashedSeparator(),
+    bytes(0x1b, 0x45, 0x01),
+    textLine('DETALLE DE VENTAS'),
+    bytes(0x1b, 0x45, 0x00),
+    dashedSeparator(),
+  ]
 
+  if (ventas.length === 0) {
+    parts.push(textLine('Sin ventas registradas en el periodo.'), dashedSeparator())
+  }
+
+  for (const venta of ventas) {
+    for (const line of wrapDescription(`Ticket: ${venta.id ?? '-'}`, RECEIPT_WIDTH)) {
+      parts.push(textLine(line))
+    }
+    parts.push(textLine(`Fecha: ${formatFecha(venta.fecha)} ${formatHora(venta.fecha)}`))
+    for (const line of wrapDescription(`Forma de Pago: ${formatPaymentMethod(venta)}`, RECEIPT_WIDTH)) {
+      parts.push(textLine(line))
+    }
+    parts.push(textLine(tableHeader))
+
+    const items = Array.isArray(venta.items) ? venta.items : []
+    if (items.length === 0) parts.push(textLine('Sin detalle de productos registrado.'))
+    for (const item of items) {
+      for (const line of formatProductLines(item)) {
+        parts.push(textLine(line))
+      }
+    }
+    parts.push(
+      textLine(formatBreakdownLine('Total venta:', formatTicketMoney(venta.total))),
+      dashedSeparator(),
+    )
+  }
+
+  parts.push(
+    bytes(0x1b, 0x45, 0x01),
+    textLine('RESUMEN DEL CORTE'),
+    bytes(0x1b, 0x45, 0x00),
     textLine(formatBreakdownLine('Total Efectivo:', formatTicketMoney(totalEfectivo))),
     textLine(formatBreakdownLine('Total Transferencia:', formatTicketMoney(totalTransferencia))),
     textLine(formatBreakdownLine('Prendas/Articulos:', `${prendas} pzs`)),
@@ -330,7 +371,7 @@ function buildDailyCloseReceiptBuffer(closeData) {
     bytes(0x1b, 0x61, 0x02),
     bytes(0x1b, 0x45, 0x01),
     bytes(0x1d, 0x21, 0x10),
-    textLine(`TOTAL DEL DIA: ${formatTicketMoney(totalDia)}`),
+    textLine(`${esHistorial ? 'TOTAL DEL PERIODO' : 'TOTAL DEL DIA'}: ${formatTicketMoney(totalDia)}`),
     bytes(0x1d, 0x21, 0x00),
     bytes(0x1b, 0x45, 0x00),
     bytes(0x1b, 0x61, 0x00),
@@ -343,7 +384,7 @@ function buildDailyCloseReceiptBuffer(closeData) {
 
     bytes(0x1b, 0x64, 0x05),
     bytes(0x1d, 0x56, 0x42, 0x00),
-  ]
+  )
 
   return mergeByteArrays(parts)
 }
