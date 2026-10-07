@@ -50,8 +50,7 @@ export default function BulkImport({ onImport, disabled }) {
 
       <p className="mb-3 text-sm text-carbon/60 dark:text-[#A8A29E]">
         Sube uno o varios archivos con las columnas exactas:{' '}
-        <strong>{COLUMNAS_PLANTILLA.join(', ')}</strong>. Cada fila debe traer departamento y
-        categoría válidos; las filas con errores se omiten automáticamente.
+        <strong>{COLUMNAS_PLANTILLA.join(', ')}</strong>.
       </p>
 
       <button
